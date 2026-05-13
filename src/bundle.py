@@ -44,7 +44,8 @@ def _read_static(name: str, subdir: str = 'js') -> str:
     return path.read_text(encoding='utf-8')
 
 
-def _compute_stats(nodes: list[dict[str, Any]],
+def _compute_stats(graph_json_path: str,
+                   nodes: list[dict[str, Any]],
                    edges: list[dict[str, Any]]) -> dict[str, Any]:
     node_types: dict[str, int] = {}
     for n in nodes:
@@ -54,11 +55,33 @@ def _compute_stats(nodes: list[dict[str, Any]],
     for e in edges:
         t = e.get('edge_type', 'unknown')
         edge_types[t] = edge_types.get(t, 0) + 1
+
+    # Surface quality metrics so the standalone viewer's Findings panel and
+    # metric pills work the same way as the Flask server's `/api/stats`.
+    try:
+        from .report import build_report
+        r = build_report(graph_json_path)
+        quality = {
+            'diataxis_purity':      r.diataxis_purity,
+            'reachability_at_3':    r.reachability_at_3,
+            'reachability_entry':   r.reachability_entry,
+            'orphans':              len(r.orphans),
+            'dead_ends':            len(r.dead_ends),
+            'broken_doc_refs':      len(r.broken_doc_refs),
+            'broken_label_refs':    len(r.broken_label_refs),
+            'broken_anchors':       len(r.broken_anchors),
+            'diataxis_cross_edges': len(r.diataxis_cross_edges),
+            'diataxis_counts':      r.diataxis_counts,
+        }
+    except Exception:  # noqa: BLE001
+        quality = None
+
     return {
         'total_nodes': len(nodes),
         'total_edges': len(edges),
         'node_types':  node_types,
         'edge_types':  edge_types,
+        'quality':     quality,
     }
 
 
@@ -73,7 +96,7 @@ def bundle_html(graph_json_path: str, output_path: str,
     nodes = [Node.from_dict(n) for n in nodes_raw]
     edges = [Edge.from_dict(e) for e in edges_raw]
     elements = export_cytoscape_json(nodes, edges)
-    stats    = _compute_stats(nodes_raw, edges_raw)
+    stats    = _compute_stats(graph_json_path, nodes_raw, edges_raw)
 
     title = title or Path(graph_json_path).stem
     html = _TEMPLATE.read_text(encoding='utf-8').replace('{{ title }}', title)

@@ -56,6 +56,12 @@ def parse_rst_headings(filepath: str) -> list[str]:
     return out
 
 
+def parse_rst_title(filepath: str) -> Optional[str]:
+    """Return the first section title in an .rst file (the document title)."""
+    headings = parse_rst_headings(filepath)
+    return headings[0] if headings else None
+
+
 def parse_rst_file(filepath: str) -> list[ParsedLink]:
     path = Path(filepath)
     text = path.read_text(encoding='utf-8', errors='replace')

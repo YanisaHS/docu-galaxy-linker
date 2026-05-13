@@ -56,15 +56,23 @@ def _pos_to_line(text: str, pos: int) -> int:
 
 
 _HEADING_RE = re.compile(r'^(#{1,6})\s+(.+?)\s*#*\s*$', re.MULTILINE)
+_FRONT_MATTER_TITLE_RE = re.compile(r'^title:\s*(.+?)\s*$', re.MULTILINE)
+
+
+def _strip_front_matter(text: str) -> tuple[str, str]:
+    """Return (front_matter, body). Front matter is empty if absent."""
+    if not text.startswith('---'):
+        return '', text
+    end = text.find('\n---', 3)
+    if end == -1:
+        return '', text
+    return text[:end], text[end + 4:]
 
 
 def parse_markdown_headings(filepath: str) -> list[str]:
     """Return all heading texts from a Markdown / MyST file (in document order)."""
     text = Path(filepath).read_text(encoding='utf-8', errors='replace')
-    if text.startswith('---'):
-        end = text.find('\n---', 3)
-        if end != -1:
-            text = text[end + 4:]
+    _, text = _strip_front_matter(text)
     fence_ranges = _get_code_fence_ranges(text)
     headings: list[str] = []
     for m in _HEADING_RE.finditer(text):
@@ -72,6 +80,37 @@ def parse_markdown_headings(filepath: str) -> list[str]:
             continue
         headings.append(m.group(2).strip())
     return headings
+
+
+def parse_markdown_title(filepath: str) -> Optional[str]:
+    """Return the document's title — preferred sources, in order:
+
+    1. `title:` field in YAML front matter (Sphinx/Jekyll convention)
+    2. First `# H1` heading in the body
+    3. First heading of any level (fallback for docs that start with `##`)
+
+    Returns `None` if none of those exist.
+    """
+    text = Path(filepath).read_text(encoding='utf-8', errors='replace')
+    front, body = _strip_front_matter(text)
+    if front:
+        fm = _FRONT_MATTER_TITLE_RE.search(front)
+        if fm:
+            return fm.group(1).strip().strip('"').strip("'") or None
+    fence_ranges = _get_code_fence_ranges(body)
+    first_h1: Optional[str] = None
+    first_any: Optional[str] = None
+    for m in _HEADING_RE.finditer(body):
+        if _in_code_fence(m.start(), fence_ranges):
+            continue
+        level = len(m.group(1))
+        text_part = m.group(2).strip()
+        if first_any is None:
+            first_any = text_part
+        if level == 1 and first_h1 is None:
+            first_h1 = text_part
+            break
+    return first_h1 or first_any
 
 
 def parse_markdown_file(filepath: str) -> list[ParsedLink]:

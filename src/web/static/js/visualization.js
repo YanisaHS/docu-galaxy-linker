@@ -134,13 +134,17 @@
         selector: 'node',
         style: {
           label: 'data(label)',
-          'font-size': 'mapData(size, 14, 80, 7, 15)',
+          'font-size': 'mapData(size, 14, 80, 8, 15)',
           'font-weight': 500,
           color: '#e6edf3',
           'text-valign': 'bottom',
           'text-margin-y': 5,
           'text-outline-color': '#0b0e14',
           'text-outline-width': 2.5,
+          // Titles (H1s) can be long. Wrap to a reasonable width so labels
+          // don't streak across the canvas.
+          'text-wrap': 'wrap',
+          'text-max-width': 160,
           width:  'data(size)',
           height: 'data(size)',
           'border-width': 0,
@@ -148,7 +152,7 @@
           'transition-duration': '120ms',
         },
       },
-      { selector: 'node[size <= 24]', style: { 'text-opacity': 0 } },
+      { selector: 'node[size <= 22]', style: { 'text-opacity': 0 } },
       ...nodeType,
       ...dia,
       ...edgeType,

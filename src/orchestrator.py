@@ -13,8 +13,12 @@ from typing import Optional
 
 from .export import export_cytoscape_json, export_graph_json
 from .graph.builder import GraphBuilder
-from .parsers.markdown_parser import parse_markdown_file, parse_markdown_headings
-from .parsers.rst_parser import parse_rst_file, parse_rst_headings
+from .parsers.markdown_parser import (
+    parse_markdown_file, parse_markdown_headings, parse_markdown_title,
+)
+from .parsers.rst_parser import (
+    parse_rst_file, parse_rst_headings, parse_rst_title,
+)
 
 
 class ExtractorOrchestrator:
@@ -78,13 +82,17 @@ class ExtractorOrchestrator:
                 if filepath.suffix == '.md':
                     links    = parse_markdown_file(str(filepath))
                     headings = parse_markdown_headings(str(filepath))
+                    title    = parse_markdown_title(str(filepath))
                 elif filepath.suffix == '.rst':
                     links    = parse_rst_file(str(filepath))
                     headings = parse_rst_headings(str(filepath))
+                    title    = parse_rst_title(str(filepath))
                 else:
                     continue
                 self.builder.add_parsed_links(links, str(filepath))
                 self.builder.register_headings(str(filepath), headings)
+                if title:
+                    self.builder.set_document_title(str(filepath), title)
             except Exception as exc:  # noqa: BLE001
                 msg = f'{type(exc).__name__}: {exc}'
                 self._errors.append((str(rel), msg))

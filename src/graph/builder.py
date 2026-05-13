@@ -55,14 +55,14 @@ def classify_diataxis(path: str,
         for k, v in prefixes.items():
             table[k] = tuple(v)
     p = (path or '').lower().lstrip('./').lstrip('/')
-    head = p.split('/', 1)[0]
-    for section, group in table.items():
-        if head in group:
-            return section
-    stem = Path(head).stem
-    for section, group in table.items():
-        if stem in group:
-            return section
+    for part in p.split('/'):
+        for section, group in table.items():
+            if part in group:
+                return section
+        stem = Path(part).stem
+        for section, group in table.items():
+            if stem in group:
+                return section
     return 'meta'
 
 
@@ -253,6 +253,22 @@ class GraphBuilder:
             if slug:
                 bucket.add(slug)
 
+    def set_document_title(self, source_file: str, title: str) -> None:
+        """Use the document's H1 (or front-matter `title:`) as its node label.
+
+        The original filename stays available as `path`, so the info panel and
+        Markdown export still surface it. Falling through to filename for docs
+        without a heading is handled by the caller (it just doesn't call this).
+        """
+        doc_id = self._ensure_document_node(source_file)
+        node = self._nodes.get(doc_id)
+        if node is None:
+            return
+        node.label = title
+        # The graph stores a flattened snapshot; keep it in sync so exports
+        # see the updated label.
+        self.graph.nodes[doc_id]['label'] = title
+
     def add_parsed_links(self, links: list, source_file: str) -> None:
         """Ingest a list of ParsedLink objects from one source file."""
         source_id = self._ensure_document_node(source_file)
@@ -362,15 +378,23 @@ class GraphBuilder:
         if not clean:
             return self._ensure_document_node(source_file)
 
+        # Sphinx/MyST treat `/foo/bar.md` as "from the project (docs) root",
+        # not as a filesystem-absolute path. Strip the leading slash so
+        # `project_root / clean` doesn't escape to the actual fs root, which
+        # would (silently) mark every such link as broken. Also normalise a
+        # trailing slash (`page.md/`) — humans sometimes write that.
+        is_root_relative = clean.startswith('/')
+        clean = clean.lstrip('/').rstrip('/')
+        if not clean:
+            return self._ensure_document_node(source_file)
+
         # Apply redirects (matching either with or without extension).
         if self.redirects:
             from ..config import _normalise_redirect_key
             key = _normalise_redirect_key(clean)
             if key in self.redirects:
                 redirected = self.redirects[key]
-                # Try to find the redirected target as a real file
                 clean = redirected
-                # Re-add a default extension if needed
                 if not Path(clean).suffix:
                     clean_with_ext = clean + '.md'
                 else:
@@ -384,33 +408,47 @@ class GraphBuilder:
                         pass
 
         # Known external prefixes: treat as external rather than broken.
-        # Strip any leading './' or '/' before comparing.
-        plain = clean.lstrip('./').lstrip('/')
-        if any(plain.startswith(pref) for pref in self.known_external_prefixes):
-            return self._ensure_external_node(plain)
+        if any(clean.startswith(pref) for pref in self.known_external_prefixes):
+            return self._ensure_external_node(clean)
 
         source_dir = Path(source_file).resolve().parent
 
-        # Try the path as-is and with common doc extensions
-        candidates: list[Path] = [source_dir / clean]
-        if not Path(clean).suffix:
-            for ext in ('.md', '.rst'):
-                candidates.append(source_dir / (clean + ext))
-                candidates.append(self.project_root / (clean + ext))
-        candidates.append(self.project_root / clean)
+        # Build the candidate list. Root-relative paths (`/foo/bar.md`) skip
+        # the source-relative attempts so a stray sibling file can't shadow
+        # the real target.
+        candidates: list[Path] = []
+        if is_root_relative:
+            candidates.append(self.project_root / clean)
+            if not Path(clean).suffix:
+                for ext in ('.md', '.rst'):
+                    candidates.append(self.project_root / (clean + ext))
+        else:
+            candidates.append(source_dir / clean)
+            if not Path(clean).suffix:
+                for ext in ('.md', '.rst'):
+                    candidates.append(source_dir / (clean + ext))
+                    candidates.append(self.project_root / (clean + ext))
+            candidates.append(self.project_root / clean)
 
         for candidate in candidates:
             if candidate.exists():
                 try:
                     rel = str(candidate.resolve().relative_to(self.project_root))
+                    # Files that aren't docs (e.g. .conf, .yaml referenced
+                    # from a Markdown link) should be assets, not documents.
+                    if Path(rel).suffix.lower() not in ('.md', '.rst', ''):
+                        return self._ensure_asset_node(rel)
                     return self._ensure_virtual_document_node(rel, resolved=True)
                 except ValueError:
                     pass
 
-        # Fallback: target is a broken / unresolved doc reference.
-        if not Path(clean).suffix:
-            clean = clean + '.md'
-        return self._ensure_virtual_document_node(clean, resolved=False)
+        # Fallback: target is a broken / unresolved doc reference. Preserve
+        # the leading slash in the displayed path so the author can see it
+        # was a root-relative link that didn't resolve.
+        display = ('/' + clean) if is_root_relative else clean
+        if not Path(display).suffix:
+            display = display + '.md'
+        return self._ensure_virtual_document_node(display, resolved=False)
 
     # ------------------------------------------------------------------
     # Post-processing
@@ -428,6 +466,44 @@ class GraphBuilder:
             defined = label in self._label_defs
             node.metadata['resolved'] = defined
             self.graph.nodes[node_id]['metadata'] = node.metadata
+
+        # Merge resolved label nodes into their target document nodes so a
+        # page referenced by RST label doesn't appear as a duplicate node.
+        label_to_doc: dict[str, str] = {}
+        for node_id, node in list(self._nodes.items()):
+            if node.node_type != 'label' or node.label.startswith('term:'):
+                continue
+            if node.label in self._label_defs:
+                doc_id = self._label_defs[node.label]
+                if doc_id != node_id:
+                    label_to_doc[node_id] = doc_id
+
+        for label_node_id, doc_node_id in label_to_doc.items():
+            seen: set[tuple[str, str, str]] = set()
+            new_edges: list[Edge] = []
+            for edge in self._edges:
+                src = doc_node_id if edge.source == label_node_id else edge.source
+                tgt = doc_node_id if edge.target == label_node_id else edge.target
+                if src == tgt:
+                    continue
+                key = (src, tgt, edge.edge_type)
+                if key not in seen:
+                    seen.add(key)
+                    if src != edge.source or tgt != edge.target:
+                        new_edges.append(Edge(source=src, target=tgt, edge_type=edge.edge_type, label=edge.label, metadata=edge.metadata))
+                    else:
+                        new_edges.append(edge)
+            self._edges = new_edges
+
+            if label_node_id in self.graph:
+                for src, _, data in list(self.graph.in_edges(label_node_id, data=True)):
+                    if src != doc_node_id and not self.graph.has_edge(src, doc_node_id):
+                        self.graph.add_edge(src, doc_node_id, **data)
+                for _, tgt, data in list(self.graph.out_edges(label_node_id, data=True)):
+                    if tgt != doc_node_id and not self.graph.has_edge(doc_node_id, tgt):
+                        self.graph.add_edge(doc_node_id, tgt, **data)
+                self.graph.remove_node(label_node_id)
+            del self._nodes[label_node_id]
 
         # Anchor validation
         for source_id, target_doc_id, anchor in self._pending_anchors:
