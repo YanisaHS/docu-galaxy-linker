@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocuGalaxy — {{ title }}</title>
 
-  <!-- Cytoscape.js (served locally) -->
+  <!-- Cytoscape.js + fcose layout (served locally) -->
   <script src="/static/js/cytoscape.min.js"></script>
+  <script src="/static/js/layout-base.js"></script>
+  <script src="/static/js/cose-base.js"></script>
+  <script src="/static/js/cytoscape-fcose.js"></script>
 
   <style>
     :root {
@@ -18,10 +21,12 @@
       --accent: #58a6ff;
       --danger: #f85149;
 
-      /* Project colours */
-      --c-landscape:  #79c0ff;
-      --c-server:     #56d364;
-      --c-security:   #ffa657;
+      /* Diataxis colours */
+      --c-tutorial:    #f0883e;
+      --c-how-to:      #7ee787;
+      --c-reference:   #79c0ff;
+      --c-explanation: #bc8cff;
+      --c-meta:        #8b949e;
 
       /* Node colours */
       --c-document: #58a6ff;
@@ -145,6 +150,36 @@
 
     .btn-row { display: flex; gap: 6px; }
     .btn-row button { flex: 1; }
+
+    /* ---- Preset buttons ---- */
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .preset-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 6px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preset-btn:hover { background: var(--border); }
+    .preset-btn.active {
+      background: var(--accent);
+      color: #0e1117;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 2px 0;
+      cursor: pointer;
+    }
+    label input { cursor: pointer; }
 
     /* ---- Legend ---- */
     .legend-item {
@@ -348,15 +383,28 @@
     <span id="search-info"></span>
   </div>
 
+  <!-- Presets -->
+  <div class="sidebar-section">
+    <h2>Quick views</h2>
+    <div class="preset-grid">
+      <button class="preset-btn active" data-preset="all">All</button>
+      <button class="preset-btn" data-preset="docs">Docs only</button>
+      <button class="preset-btn" data-preset="hubs">Top hubs</button>
+      <button class="preset-btn" data-preset="orphans">Orphans</button>
+      <button class="preset-btn" data-preset="deadends">Dead ends</button>
+    </div>
+  </div>
+
   <!-- Layout -->
   <div class="sidebar-section">
     <h2>Layout</h2>
     <select id="layout-select">
-      <option value="cose" selected>CoSE (force-directed)</option>
+      <option value="fcose" selected>fCoSE (best for clusters)</option>
+      <option value="cose">CoSE (force-directed)</option>
+      <option value="concentric">Concentric (by intensity)</option>
       <option value="breadthfirst">Breadth-first</option>
       <option value="circle">Circle</option>
       <option value="grid">Grid</option>
-      <option value="concentric">Concentric</option>
       <option value="random">Random</option>
     </select>
     <div class="btn-row" style="margin-top:4px">
@@ -378,20 +426,26 @@
     <label><input type="checkbox" class="edge-toggle" value="term_link" checked> terms</label>
   </div>
 
-  <!-- Project colours legend (shown only for multi-project graphs) -->
-  <div class="sidebar-section" id="project-legend-section" style="display:none">
-    <h2>Projects</h2>
-    <div id="project-legend-list"></div>
+  <!-- Diataxis legend -->
+  <div class="sidebar-section">
+    <h2>Diataxis (documents)</h2>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-tutorial)"></div><span>tutorial</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-how-to)"></div><span>how-to</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-reference)"></div><span>reference</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-explanation)"></div><span>explanation</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-meta)"></div><span>meta / other</span></div>
   </div>
 
-  <!-- Legend -->
+  <!-- Other node types -->
   <div class="sidebar-section">
-    <h2>Node types</h2>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-document)"></div><span>document</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-external)"></div><span>external</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-label)"></div><span>label / ref</span></div>
+    <h2>Other node types</h2>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-external)"></div><span>external URL</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-label)"></div><span>label / ref target</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--c-anchor)"></div><span>anchor</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--c-asset)"></div><span>asset</span></div>
+    <div class="legend-item" style="margin-top:6px;color:var(--muted);font-size:11px">
+      Node size = link intensity (in + out)
+    </div>
   </div>
 
   <div class="sidebar-section">

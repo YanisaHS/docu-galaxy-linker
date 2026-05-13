@@ -279,5 +279,25 @@ def merge(graph_files: tuple[str, ...], output: str, cytoscape: str | None) -> N
         click.echo(f'Cytoscape data → {cytoscape}')
 
 
+# ---------------------------------------------------------------------------
+# bundle
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('graph_json', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option('--output', '-o', required=True,
+              help='Output HTML file (self-contained, opens via file://).')
+@click.option('--title', default=None, help='Page title (defaults to graph filename).')
+def bundle(graph_json: str, output: str, title: str | None) -> None:
+    """Emit a single self-contained HTML viewer for GRAPH_JSON.
+
+    The result inlines Cytoscape.js, the fcose layout, the visualization
+    script, and the graph data — no server or network access needed.
+    """
+    from .bundle import bundle_html
+    bundle_html(graph_json, output, title=title)
+    click.echo(f'Standalone viewer → {output}')
+
+
 if __name__ == '__main__':
     cli()
