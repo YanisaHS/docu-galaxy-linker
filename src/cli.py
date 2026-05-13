@@ -186,6 +186,72 @@ def _find_docs_dir(repo_root: Path) -> Path:
     return repo_root
 
 
+# ---------------------------------------------------------------------------
+# concept-map
+# ---------------------------------------------------------------------------
+
+@cli.command('concept-map')
+@click.argument('docs_dir', type=click.Path(exists=True, file_okay=False, resolve_path=True))
+@click.option('--output', '-o', default=None,
+              help='Save the concept graph to this JSON file (optional).')
+@click.option('--port', '-p', default=5001, show_default=True, help='HTTP port.')
+@click.option('--host', default='127.0.0.1', show_default=True, help='Bind host.')
+@click.option('--similarity', default=0.12, show_default=True,
+              help='Cosine-similarity threshold for concept edges (0–1).')
+@click.option('--no-serve', is_flag=True,
+              help='Build the graph JSON and exit without starting a server.')
+def concept_map(
+    docs_dir: str,
+    output: str | None,
+    port: int,
+    host: str,
+    similarity: float,
+    no_serve: bool,
+) -> None:
+    """Build and visualise a concept / topic map for a documentation set.
+
+    DOCS_DIR is the root directory of a documentation project
+    (e.g. repos/landscape-documentation/docs).
+
+    Topics (nodes) are the individual pages of the documentation, coloured by
+    their section category.  Edges represent either explicit cross-references
+    between pages or conceptual similarity (shared technical terms via TF-IDF).
+    """
+    from .concepts.extractor import extract_doc_pages
+    from .concepts.builder import build_concept_graph
+    from .web.app import create_concept_app
+
+    click.echo(f'Scanning documentation: {docs_dir}')
+    pages = extract_doc_pages(docs_dir)
+    click.echo(f'  Found {len(pages)} content pages')
+
+    click.echo('Building concept graph …')
+    graph = build_concept_graph(pages, docs_root=docs_dir, similarity_threshold=similarity)
+
+    n_nodes = len(graph['nodes'])
+    n_xref = sum(1 for e in graph['edges'] if e['edge_type'] == 'cross_ref')
+    n_sim = sum(1 for e in graph['edges'] if e['edge_type'] == 'shared_concept')
+    n_dup = sum(1 for e in graph['edges'] if e['edge_type'] == 'duplicate')
+    click.echo(f'  {n_nodes} topic nodes')
+    click.echo(f'  {n_xref} cross-reference edges')
+    click.echo(f'  {n_sim} conceptual-similarity edges')
+    click.echo(f'  {n_dup} duplicate edges')
+
+    if output:
+        import json as _json
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(_json.dumps(graph, indent=2), encoding='utf-8')
+        click.echo(f'Concept graph written to: {output}')
+
+    if no_serve:
+        return
+
+    app = create_concept_app(graph)
+    click.echo(f'Concept map server: http://{host}:{port}')
+    click.echo('Press Ctrl+C to stop.')
+    app.run(host=host, port=port, debug=False)
+
+
 def _print_summary(analysis: dict, indent: str = '') -> None:
     ntc = analysis.get('node_type_counts', {})
     click.echo(
