@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docu-galaxy-linker"
+version = "0.1.0"
+description = "Extract and visualize documentation links from Canonical projects"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.0",
+    "networkx>=3.0",
+    "flask>=3.0",
+]
+
+[project.scripts]
+docu-galaxy-linker = "src.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

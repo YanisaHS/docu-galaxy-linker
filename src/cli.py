@@ -1,0 +1,283 @@
+"""
+CLI entry point for docu-galaxy-linker.
+
+Commands:
+  extract   – scan a documentation project and emit graph JSON
+  visualize – serve an interactive Cytoscape.js graph
+  analyze   – print statistics about a saved graph JSON
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+import click
+
+from .orchestrator import ExtractorOrchestrator
+
+
+@click.group()
+@click.version_option(package_name='docu-galaxy-linker')
+def cli() -> None:
+    """docu-galaxy-linker — extract and visualize documentation link graphs."""
+
+
+# ---------------------------------------------------------------------------
+# extract
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('project_path', type=click.Path(exists=True, file_okay=False, resolve_path=True))
+@click.option('--output', '-o', default='graph.json', show_default=True,
+              help='Output graph JSON file.')
+@click.option('--cytoscape', '-c', default=None,
+              help='Also write a Cytoscape.js elements JSON file.')
+@click.option('--project-name', default=None,
+              help='Tag all nodes with this project name (used in multi-project merges).')
+@click.option('--verbose', '-v', is_flag=True, help='Show per-file progress.')
+def extract(project_path: str, output: str, cytoscape: str | None,
+            project_name: str | None, verbose: bool) -> None:
+    """Extract all links from PROJECT_PATH and save a graph JSON.
+
+    PROJECT_PATH is the root directory of a documentation project
+    (e.g. a cloned Canonical docs repository).
+    """
+    click.echo(f'Extracting links from: {project_path}')
+
+    orchestrator = ExtractorOrchestrator(project_path, project_name=project_name)
+    orchestrator.extract(verbose=verbose)
+    orchestrator.save(output, cytoscape_path=cytoscape, verbose=verbose)
+
+    analysis = orchestrator.builder.analyze()
+    _print_summary(analysis)
+
+    if orchestrator.errors:
+        click.echo(f'\nWarnings: {len(orchestrator.errors)} file(s) failed to parse.')
+        if verbose:
+            for fp, msg in orchestrator.errors:
+                click.echo(f'  {fp}: {msg}')
+
+    click.echo(f'\nGraph written to: {output}')
+    if cytoscape:
+        click.echo(f'Cytoscape data written to: {cytoscape}')
+
+
+# ---------------------------------------------------------------------------
+# visualize
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('graph_json', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option('--port', '-p', default=5000, show_default=True, help='HTTP port.')
+@click.option('--host', default='127.0.0.1', show_default=True, help='Bind host.')
+def visualize(graph_json: str, port: int, host: str) -> None:
+    """Start an interactive visualization server for GRAPH_JSON."""
+    from .web.app import create_app  # lazy import to keep startup fast
+
+    app = create_app(graph_json)
+    click.echo(f'Visualization server: http://{host}:{port}')
+    click.echo('Press Ctrl+C to stop.')
+    app.run(host=host, port=port, debug=False)
+
+
+# ---------------------------------------------------------------------------
+# analyze
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('graph_json', type=click.Path(exists=True, dir_okay=False))
+def analyze(graph_json: str) -> None:
+    """Print statistics about a saved GRAPH_JSON file."""
+    with open(graph_json, encoding='utf-8') as f:
+        data = json.load(f)
+
+    nodes = data.get('nodes', [])
+    edges = data.get('edges', [])
+
+    node_types: dict[str, int] = {}
+    for n in nodes:
+        t = n.get('node_type', 'unknown')
+        node_types[t] = node_types.get(t, 0) + 1
+
+    edge_types: dict[str, int] = {}
+    for e in edges:
+        t = e.get('edge_type', 'unknown')
+        edge_types[t] = edge_types.get(t, 0) + 1
+
+    click.echo(f'Graph: {graph_json}')
+    click.echo(f'\nNodes  ({len(nodes)} total):')
+    for t, count in sorted(node_types.items()):
+        click.echo(f'  {t:20s} {count:>6}')
+    click.echo(f'\nEdges  ({len(edges)} total):')
+    for t, count in sorted(edge_types.items()):
+        click.echo(f'  {t:20s} {count:>6}')
+
+
+# ---------------------------------------------------------------------------
+# fetch-projects  (helper for projects.txt)
+# ---------------------------------------------------------------------------
+
+@cli.command('fetch-projects')
+@click.argument('projects_file', type=click.Path(exists=True, dir_okay=False),
+                default='projects.txt')
+@click.option('--dest', '-d', default='repos', show_default=True,
+              help='Directory to clone repositories into.')
+@click.option('--output-dir', '-o', default='graphs', show_default=True,
+              help='Directory to write graph JSON files into.')
+@click.option('--verbose', '-v', is_flag=True)
+def fetch_projects(projects_file: str, dest: str, output_dir: str, verbose: bool) -> None:
+    """Clone each GitHub repo in PROJECTS_FILE and extract its link graph.
+
+    Requires git to be available on PATH.
+    """
+    import subprocess
+
+    dest_dir = Path(dest)
+    out_dir = Path(output_dir)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    urls = [
+        line.strip()
+        for line in Path(projects_file).read_text().splitlines()
+        if line.strip() and not line.startswith('#')
+    ]
+
+    click.echo(f'Processing {len(urls)} project(s) from {projects_file}')
+
+    for url in urls:
+        repo_name = url.rstrip('/').rsplit('/', 1)[-1]
+        repo_dir = dest_dir / repo_name
+        graph_file = out_dir / f'{repo_name}.json'
+        cy_file = out_dir / f'{repo_name}-cytoscape.json'
+
+        if not repo_dir.exists():
+            click.echo(f'\nCloning {url} → {repo_dir}')
+            result = subprocess.run(
+                ['git', 'clone', '--depth', '1', url, str(repo_dir)],
+                capture_output=not verbose,
+            )
+            if result.returncode != 0:
+                click.echo(f'  ERROR: git clone failed for {url}', err=True)
+                continue
+        else:
+            click.echo(f'\nUsing existing clone: {repo_dir}')
+
+        # Find docs directory
+        docs_dir = _find_docs_dir(repo_dir)
+        click.echo(f'  Extracting from: {docs_dir}')
+
+        orchestrator = ExtractorOrchestrator(str(docs_dir), project_name=repo_name)
+        orchestrator.extract(verbose=verbose)
+        orchestrator.save(str(graph_file), cytoscape_path=str(cy_file), verbose=verbose)
+
+        analysis = orchestrator.builder.analyze()
+        _print_summary(analysis, indent='  ')
+        click.echo(f'  Graph → {graph_file}')
+
+
+def _find_docs_dir(repo_root: Path) -> Path:
+    """Return the documentation root inside a repo."""
+    for candidate in ('docs', 'doc', '.'):
+        d = repo_root / candidate
+        if d.is_dir() and list(d.glob('**/*.md')) + list(d.glob('**/*.rst')):
+            return d
+    return repo_root
+
+
+def _print_summary(analysis: dict, indent: str = '') -> None:
+    ntc = analysis.get('node_type_counts', {})
+    click.echo(
+        f'{indent}Nodes: {analysis["total_nodes"]} '
+        f'({ntc.get("document", 0)} docs, '
+        f'{ntc.get("external", 0)} external, '
+        f'{ntc.get("label", 0)} labels)'
+    )
+    click.echo(f'{indent}Edges: {analysis["total_edges"]}')
+    click.echo(f'{indent}Isolated nodes: {analysis["isolated_count"]}')
+    click.echo(f'{indent}Weakly-connected components: {analysis["weakly_connected_components"]}')
+
+
+# ---------------------------------------------------------------------------
+# merge
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('graph_files', nargs=-1, required=True,
+                type=click.Path(exists=True, dir_okay=False))
+@click.option('--output', '-o', required=True,
+              help='Output merged graph JSON file.')
+@click.option('--cytoscape', '-c', default=None,
+              help='Also write a Cytoscape.js elements JSON file.')
+def merge(graph_files: tuple[str, ...], output: str, cytoscape: str | None) -> None:
+    """Merge multiple per-project GRAPH_FILES into a single combined graph.
+
+    Non-external node IDs are namespaced by project (derived from the filename
+    if no 'project' field is already set on the node) to avoid ID collisions.
+    External URLs are shared across projects.
+    """
+    all_nodes: dict[str, dict] = {}  # final id -> node dict
+    all_edges: list[dict] = []
+
+    for gf in graph_files:
+        project = Path(gf).stem  # e.g. "landscape-documentation"
+        with open(gf, encoding='utf-8') as f:
+            data = json.load(f)
+
+        nodes: list[dict] = data.get('nodes', [])
+        edges: list[dict] = data.get('edges', [])
+
+        id_remap: dict[str, str] = {}
+        for node in nodes:
+            orig_id: str = node['id']
+            node_type: str = node.get('node_type', '')
+            node_project: str = node.get('project') or project
+
+            if node_type == 'external':
+                # External URLs are shared — keep original ID, no project tag
+                new_id = orig_id
+                if new_id not in all_nodes:
+                    all_nodes[new_id] = dict(node)
+            else:
+                # Namespace by project to avoid collisions
+                new_id = f'{project}/{orig_id}'
+                new_node = dict(node)
+                new_node['id'] = new_id
+                new_node['project'] = node_project
+                if new_node.get('path'):
+                    new_node['path'] = f'{project}/{new_node["path"]}'
+                all_nodes[new_id] = new_node
+
+            id_remap[orig_id] = new_id
+
+        for edge in edges:
+            src = id_remap.get(edge['source'], edge['source'])
+            tgt = id_remap.get(edge['target'], edge['target'])
+            if src == tgt:
+                continue
+            new_edge = dict(edge)
+            new_edge['source'] = src
+            new_edge['target'] = tgt
+            all_edges.append(new_edge)
+
+    from .graph.models import Edge, Node
+    from .export import export_graph_json, export_cytoscape_json
+
+    node_objs = [Node.from_dict(n) for n in all_nodes.values()]
+    edge_objs = [Edge.from_dict(e) for e in all_edges]
+
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
+    with open(output, 'w', encoding='utf-8') as f:
+        json.dump(export_graph_json(node_objs, edge_objs), f, indent=2)
+    click.echo(f'Merged graph ({len(node_objs)} nodes, {len(edge_objs)} edges) → {output}')
+
+    if cytoscape:
+        Path(cytoscape).parent.mkdir(parents=True, exist_ok=True)
+        with open(cytoscape, 'w', encoding='utf-8') as f:
+            json.dump(export_cytoscape_json(node_objs, edge_objs), f, indent=2)
+        click.echo(f'Cytoscape data → {cytoscape}')
+
+
+if __name__ == '__main__':
+    cli()

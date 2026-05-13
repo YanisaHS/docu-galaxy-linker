@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: docu-galaxy-linker
+Version: 0.1.0
+Summary: Extract and visualize documentation links from Canonical projects
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: click>=8.0
+Requires-Dist: networkx>=3.0
+Requires-Dist: flask>=3.0

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocuGalaxy — {{ title }}</title>
+
+  <!-- Cytoscape.js (served locally) -->
+  <script src="/static/js/cytoscape.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0e1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --danger: #f85149;
+
+      /* Project colours */
+      --c-landscape:  #79c0ff;
+      --c-server:     #56d364;
+      --c-security:   #ffa657;
+
+      /* Node colours */
+      --c-document: #58a6ff;
+      --c-external: #f0883e;
+      --c-label:    #bc8cff;
+      --c-anchor:   #7ee787;
+      --c-asset:    #8b949e;
+
+      /* Edge colours */
+      --e-doc-link:      #58a6ff;
+      --e-external-link: #f0883e;
+      --e-link:          #79c0ff;
+      --e-ref-link:      #bc8cff;
+      --e-include:       #ffa657;
+      --e-anchor-link:   #7ee787;
+      --e-image:         #56d364;
+      --e-term-link:     #d2a8ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      display: flex;
+      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ---- Sidebar ---- */
+    #sidebar {
+      width: 260px;
+      min-width: 200px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px 12px;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    #sidebar h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+
+    #sidebar h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-section { display: flex; flex-direction: column; gap: 4px; }
+
+    /* ---- Stats ---- */
+    #stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .stat-card .val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card .lbl {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ---- Search ---- */
+    #search-input {
+      width: 100%;
+      padding: 6px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+
+    #search-input:focus { border-color: var(--accent); }
+
+    #search-info { font-size: 11px; color: var(--muted); min-height: 16px; }
+
+    /* ---- Layout & controls ---- */
+    select, button {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    select:focus, button:focus { outline: 2px solid var(--accent); }
+    button:hover { background: var(--border); }
+
+    .btn-row { display: flex; gap: 6px; }
+    .btn-row button { flex: 1; }
+
+    /* ---- Legend ---- */
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-line {
+      width: 18px;
+      height: 2px;
+      flex-shrink: 0;
+      border-radius: 1px;
+    }
+
+    /* ---- Info panel ---- */
+    #info-panel {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 300px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      z-index: 20;
+      display: none;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    #info-panel.visible { display: block; }
+
+    #info-panel h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .info-key { color: var(--muted); min-width: 72px; }
+    .info-val { word-break: break-all; }
+
+    #info-panel #info-close {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+    }
+
+    #info-neighbours { margin-top: 10px; }
+    #info-neighbours h4 { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    #info-neighbours ul { list-style: none; padding: 0; }
+    #info-neighbours li {
+      font-size: 11px;
+      padding: 2px 0;
+      color: var(--text);
+      cursor: pointer;
+    }
+    #info-neighbours li:hover { color: var(--accent); }
+
+    /* ---- View tabs ---- */
+    #canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #view-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .view-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      color: var(--muted);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: auto;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .view-tab:hover { color: var(--text); background: none; }
+
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ---- Main canvas ---- */
+    #cy {
+      flex: 1;
+      background: var(--bg);
+    }
+
+    /* ---- Loading overlay ---- */
+    #loading {
+      position: absolute;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #error-banner {
+      display: none;
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #3d1e1e;
+      border: 1px solid var(--danger);
+      border-radius: 6px;
+      padding: 8px 16px;
+      color: var(--danger);
+      z-index: 50;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading">
+  <div class="spinner"></div>
+  <span style="color:var(--muted)">Loading graph…</span>
+</div>
+
+<div id="error-banner"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="sidebar-section">
+    <h1>DocuGalaxy</h1>
+    <span style="color:var(--muted); font-size:11px" id="graph-title"></span>
+  </div>
+
+  <!-- Stats -->
+  <div class="sidebar-section">
+    <h2>Statistics</h2>
+    <div id="stats-grid">
+      <div class="stat-card"><div class="val" id="stat-nodes">—</div><div class="lbl">Nodes</div></div>
+      <div class="stat-card"><div class="val" id="stat-edges">—</div><div class="lbl">Edges</div></div>
+      <div class="stat-card"><div class="val" id="stat-docs">—</div><div class="lbl">Docs</div></div>
+      <div class="stat-card"><div class="val" id="stat-ext">—</div><div class="lbl">External</div></div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="sidebar-section">
+    <h2>Search</h2>
+    <input id="search-input" type="search" placeholder="Filter nodes by label…" />
+    <span id="search-info"></span>
+  </div>
+
+  <!-- Layout -->
+  <div class="sidebar-section">
+    <h2>Layout</h2>
+    <select id="layout-select">
+      <option value="cose" selected>CoSE (force-directed)</option>
+      <option value="breadthfirst">Breadth-first</option>
+      <option value="circle">Circle</option>
+      <option value="grid">Grid</option>
+      <option value="concentric">Concentric</option>
+      <option value="random">Random</option>
+    </select>
+    <div class="btn-row" style="margin-top:4px">
+      <button id="btn-run-layout">Run layout</button>
+      <button id="btn-fit">Fit</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="sidebar-section">
+    <h2>Show edges</h2>
+    <label><input type="checkbox" class="edge-toggle" value="doc_link" checked> doc links</label>
+    <label><input type="checkbox" class="edge-toggle" value="external_link" checked> external</label>
+    <label><input type="checkbox" class="edge-toggle" value="link" checked> inline links</label>
+    <label><input type="checkbox" class="edge-toggle" value="ref_link" checked> references</label>
+    <label><input type="checkbox" class="edge-toggle" value="include" checked> includes</label>
+    <label><input type="checkbox" class="edge-toggle" value="anchor_link" checked> anchors</label>
+    <label><input type="checkbox" class="edge-toggle" value="image" checked> images</label>
+    <label><input type="checkbox" class="edge-toggle" value="term_link" checked> terms</label>
+  </div>
+
+  <!-- Project colours legend (shown only for multi-project graphs) -->
+  <div class="sidebar-section" id="project-legend-section" style="display:none">
+    <h2>Projects</h2>
+    <div id="project-legend-list"></div>
+  </div>
+
+  <!-- Legend -->
+  <div class="sidebar-section">
+    <h2>Node types</h2>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-document)"></div><span>document</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-external)"></div><span>external</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-label)"></div><span>label / ref</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-anchor)"></div><span>anchor</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c-asset)"></div><span>asset</span></div>
+  </div>
+
+  <div class="sidebar-section">
+    <h2>Edge types</h2>
+    <div class="legend-item"><div class="legend-line" style="background:var(--e-doc-link)"></div><span>doc link</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--e-external-link)"></div><span>external</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--e-include)"></div><span>include</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--e-ref-link)"></div><span>reference</span></div>
+    <div class="legend-item"><div class="legend-line" style="background:var(--e-anchor-link)"></div><span>anchor</span></div>
+  </div>
+</div>
+
+<!-- Canvas area with view tabs -->
+<div id="canvas-area">
+  <div id="view-tabs">
+    <button class="view-tab active" data-view="internal">Internal links</button>
+    <button class="view-tab" data-view="external">External links</button>
+  </div>
+
+  <!-- Graph canvas -->
+  <div id="cy"></div>
+
+  <!-- Node info panel -->
+  <div id="info-panel">
+    <button id="info-close">✕</button>
+    <h3 id="info-title"></h3>
+    <div id="info-body"></div>
+    <div id="info-neighbours"></div>
+  </div>
+</div>
+
+<script src="/static/js/visualization.js"></script>
+</body>
+</html>

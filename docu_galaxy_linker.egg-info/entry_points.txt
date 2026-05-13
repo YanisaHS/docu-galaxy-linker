@@ -1,0 +1,2 @@
+[console_scripts]
+docu-galaxy-linker = src.cli:cli

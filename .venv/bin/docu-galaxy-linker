@@ -1,0 +1,6 @@
+#!/home/sophie.pages@canonical.com/Documents/Hackaton/docu-galaxy-linker/.venv/bin/python3
+import sys
+from src.cli import cli
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(cli())
