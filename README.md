@@ -1,4 +1,4 @@
-# DocuGalaxy Linker
+# Docu Galaxy Linker
 
 A tool for extracting, analysing, and visualising the link structure and conceptual topology of Canonical documentation projects.
 
