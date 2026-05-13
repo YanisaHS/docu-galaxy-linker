@@ -207,10 +207,25 @@ _RE_DIATAXIS_PREFIX = re.compile(
     r'^(?:How to |How-to: ?|Tutorial: ?|Explanation: ?|Reference: ?)',
     re.IGNORECASE,
 )
+# "How to …" is the canonical title form for how-to pages — only strip it
+# when the page is NOT in the how-to section.
+_RE_HOW_TO_PREFIX = re.compile(r'^How[\s\-]to:?\s+', re.IGNORECASE)
+_RE_OTHER_DIATAXIS_PREFIX = re.compile(
+    r'^(?:Tutorial: ?|Explanation: ?|Reference: ?)',
+    re.IGNORECASE,
+)
 
 
-def _strip_diataxis_prefix(title: str) -> str:
-    """Remove redundant Diátaxis-type prefixes from a page title."""
+def _strip_diataxis_prefix(title: str, section_key: str = '') -> str:
+    """Remove redundant Diátaxis-type prefixes from a page title.
+
+    'How to …' is kept for how-to pages because it is the correct title form
+    for that content type.  All other Diátaxis prefixes (Tutorial:, Explanation:,
+    Reference:) are stripped as redundant regardless of section.
+    """
+    if section_key == 'how-to':
+        # Strip only the non-how-to prefixes; preserve "How to …"
+        return _RE_OTHER_DIATAXIS_PREFIX.sub('', title).strip()
     return _RE_DIATAXIS_PREFIX.sub('', title).strip()
 
 
@@ -242,12 +257,12 @@ def extract_doc_pages(docs_dir: str) -> list[DocPage]:
 
         fallback_title = md_file.stem.replace('-', ' ').title()
         title, headings = _extract_title_and_headings(text, fallback_title)
-        title = _strip_diataxis_prefix(title)
+        section, section_key = _classify_section(rel)
+        title = _strip_diataxis_prefix(title, section_key)
         terms = _extract_terms(text)
         shingles = _extract_shingles(text)
         section_terms, section_titles = _split_sections(text)
         word_count = len(text.split())
-        section, section_key = _classify_section(rel)
 
         pages.append(DocPage(
             id=rel,

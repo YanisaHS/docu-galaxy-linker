@@ -98,6 +98,18 @@ def _overlap_coefficient(a: DocPage, b: DocPage) -> float:
     return shared / min(len(a.shingles), len(b.shingles))
 
 
+_RE_RELEASE_NOTES = re.compile(r'release[_-]notes?|changelog', re.IGNORECASE)
+
+
+def _is_release_notes_page(page: DocPage) -> bool:
+    """Return True if this page is a release notes / changelog page.
+
+    Release notes pages are intentionally structured with divergent sections
+    (e.g. one section per feature) and should not be flagged as split candidates.
+    """
+    return bool(_RE_RELEASE_NOTES.search(page.id))
+
+
 def _is_potential_duplicate(
     a: DocPage,
     b: DocPage,
@@ -107,12 +119,19 @@ def _is_potential_duplicate(
     """
     Return True if two pages look like duplicate/redundant content.
     Criteria (either is sufficient):
-      - ≥2 shared headings AND overlap coefficient ≥ 0.20
+      - ≥2 shared headings, shared headings ≥ 30 % of the smaller page's
+        heading count, AND overlap coefficient ≥ 0.25
       - overlap coefficient ≥ 0.35  (one page is largely a subset of the other)
+
+    The heading-ratio guard prevents structural-template pages (e.g. REST API
+    reference pages that all share a handful of operation headings) from
+    being spuriously flagged.
     """
     h = _heading_overlap(a, b)
     ov = _overlap_coefficient(a, b)
-    return (h >= heading_threshold and ov >= 0.20) or ov >= overlap_threshold
+    min_h = min(len(a.headings), len(b.headings))
+    heading_ratio = h / min_h if min_h > 0 else 0.0
+    return (h >= heading_threshold and heading_ratio >= 0.30 and ov >= 0.25) or ov >= overlap_threshold
 
 
 def _jaccard_sim(sa: frozenset, sb: frozenset) -> float:
@@ -243,17 +262,20 @@ def build_concept_graph(
     # ------------------------------------------------------------------
     # Pre-compute section divergence scores
     # ------------------------------------------------------------------
-    # A page is a split candidate when it has ≥3 substantive H2 sections,
-    # ≥600 words, and the sections share little vocabulary (avg pairwise
-    # Jaccard dissimilarity ≥ 0.72).
-    _SPLIT_MIN_SECTIONS = 4
-    _SPLIT_MIN_WORDS    = 1000
+    # A page is a split candidate when it has ≥4 substantive H2 sections,
+    # ≥1000 words, the sections share little vocabulary (avg pairwise
+    # Jaccard dissimilarity ≥ 0.90), and it is not a release-notes page.
+    # Release notes are intentionally multi-sectioned with divergent content
+    # (one section per product feature / fix) and must not be flagged.
+    _SPLIT_MIN_SECTIONS  = 4
+    _SPLIT_MIN_WORDS     = 1000
     _SPLIT_DIV_THRESHOLD = 0.90
 
     divergence: dict[str, float] = {}
     for page in pages:
         if (page.word_count >= _SPLIT_MIN_WORDS
-                and len(page.section_terms) >= _SPLIT_MIN_SECTIONS):
+                and len(page.section_terms) >= _SPLIT_MIN_SECTIONS
+                and not _is_release_notes_page(page)):
             divergence[page.id] = _section_divergence(page.section_terms)
         else:
             divergence[page.id] = 0.0
@@ -371,9 +393,57 @@ def build_concept_graph(
     # Build a page lookup for duplicate detection
     page_by_id: dict[str, DocPage] = {p.id: p for p in pages}
 
+    # ------------------------------------------------------------------
+    # Duplicate detection  (word trigram Jaccard similarity)
+    # ------------------------------------------------------------------
+    # Computed *before* the similarity-edge loop so that pairs already
+    # captured as hard duplicates are excluded from shared_concept edges,
+    # preventing the same pair from appearing with two different edge types.
+    #
+    # Build inverted index: shingle -> [page_ids], skipping shingles that
+    # are so common they cause O(n²) explosion without adding signal.
+    shingle_index: dict[tuple, list[str]] = {}
+    for page in pages:
+        for shingle in page.shingles:
+            shingle_index.setdefault(shingle, []).append(page.id)
+
+    dup_candidates: dict[tuple[str, str], int] = {}
+    for pids in shingle_index.values():
+        if len(pids) < 2 or len(pids) > max(2, len(pages) // 5):
+            # Skip shingles unique to one page or shared by >20% of pages
+            continue
+        for i in range(len(pids)):
+            for j in range(i + 1, len(pids)):
+                pair = (pids[i], pids[j]) if pids[i] < pids[j] else (pids[j], pids[i])
+                dup_candidates[pair] = dup_candidates.get(pair, 0) + 1
+
+    shingle_map = {p.id: p.shingles for p in pages}
+    dup_edges: list[dict[str, Any]] = []
+    dup_pair_set: set[tuple[str, str]] = set()
+    for (pid_a, pid_b), shared_count in dup_candidates.items():
+        if shared_count < 5:  # cheap pre-filter before computing full Jaccard
+            continue
+        sim = _jaccard_sim(shingle_map[pid_a], shingle_map[pid_b])
+        if sim >= duplicate_threshold:
+            dup_pair_set.add((pid_a, pid_b))
+            dup_edges.append({
+                'source': pid_a,
+                'target': pid_b,
+                'edge_type': 'duplicate',
+                'label': f'duplicate (j={sim:.2f})',
+                'metadata': {
+                    'jaccard': round(sim, 3),
+                },
+            })
+
     node_sim_count: dict[str, int] = {}
     sim_edges: list[dict[str, Any]] = []
     for sim, pid_a, pid_b, top_terms in sim_candidates:
+        # Skip pairs already captured as hard duplicates — avoids showing the
+        # same pair as both a shared_concept edge and a duplicate edge.
+        pair = (pid_a, pid_b) if pid_a < pid_b else (pid_b, pid_a)
+        if pair in dup_pair_set:
+            continue
         ca = node_sim_count.get(pid_a, 0)
         cb = node_sim_count.get(pid_b, 0)
         if ca < max_sim_edges_per_node and cb < max_sim_edges_per_node:
@@ -395,43 +465,6 @@ def build_concept_graph(
                     'heading_overlap': h_overlap,
                     'overlap_coefficient': round(ov_coeff, 3),
                     'potential_duplicate': dup,
-                },
-            })
-
-    # ------------------------------------------------------------------
-    # Duplicate detection  (word trigram Jaccard similarity)
-    # ------------------------------------------------------------------
-    # Build inverted index: shingle -> [page_ids], skipping shingles that
-    # are so common they cause O(n²) explosion without adding signal.
-    shingle_index: dict[tuple, list[str]] = {}
-    for page in pages:
-        for shingle in page.shingles:
-            shingle_index.setdefault(shingle, []).append(page.id)
-
-    dup_candidates: dict[tuple[str, str], int] = {}
-    for pids in shingle_index.values():
-        if len(pids) < 2 or len(pids) > max(2, len(pages) // 5):
-            # Skip shingles unique to one page or shared by >20% of pages
-            continue
-        for i in range(len(pids)):
-            for j in range(i + 1, len(pids)):
-                pair = (pids[i], pids[j]) if pids[i] < pids[j] else (pids[j], pids[i])
-                dup_candidates[pair] = dup_candidates.get(pair, 0) + 1
-
-    shingle_map = {p.id: p.shingles for p in pages}
-    dup_edges: list[dict[str, Any]] = []
-    for (pid_a, pid_b), shared_count in dup_candidates.items():
-        if shared_count < 5:  # cheap pre-filter before computing full Jaccard
-            continue
-        sim = _jaccard_sim(shingle_map[pid_a], shingle_map[pid_b])
-        if sim >= duplicate_threshold:
-            dup_edges.append({
-                'source': pid_a,
-                'target': pid_b,
-                'edge_type': 'duplicate',
-                'label': f'duplicate (j={sim:.2f})',
-                'metadata': {
-                    'jaccard': round(sim, 3),
                 },
             })
 

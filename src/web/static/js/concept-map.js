@@ -443,19 +443,81 @@
         `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${esc(String(v))}</span></div>`
       ).join('');
       if (d.split_candidate) {
-        infoBody.innerHTML += `<div style="margin-top:8px;font-size:11px;color:var(--muted)">` +
-          `This page's sections have low vocabulary overlap — they may cover distinct topics that could each stand alone as a separate page.</div>`;
-
         const sections = d.split_sections || [];
+        const n = sections.length || d.num_sections;
+        infoBody.innerHTML +=
+          `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">` +
+          `<div style="font-size:11px;color:#f8b500;font-weight:600;margin-bottom:6px">✂ Suggested split plan</div>` +
+          `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">` +
+          `This page mixes <strong style="color:var(--text)">${n} distinct topics</strong> with little shared vocabulary between sections. ` +
+          `A reader looking for any one of them has to scan the whole page. ` +
+          `Consider breaking it into ${n} focused pages — one per section below.</div>`;
+
         if (sections.length) {
           infoBody.innerHTML +=
-            `<div style="margin-top:10px;font-size:11px;color:#f8b500;font-weight:600">Sections detected as divergent:</div>` +
-            `<ol style="margin:6px 0 0 16px;padding:0;font-size:11px;color:var(--text);line-height:1.8">` +
-            sections.map(s => `<li>${esc(s)}</li>`).join('') +
-            `</ol>` +
-            `<div style="margin-top:8px;font-size:11px;color:var(--muted)">` +
-            `Each item above could potentially become its own page. Consider whether a reader looking for any one of these topics would benefit from a dedicated page with its own title, introduction, and cross-references.</div>`;
+            `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Each section → a new standalone page:</div>` +
+            `<div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">` +
+            sections.map(s =>
+              `<div style="display:flex;align-items:baseline;gap:6px;font-size:11px">` +
+              `<span style="color:#f8b500;flex-shrink:0">→</span>` +
+              `<span style="color:var(--text)">${esc(s)}</span>` +
+              `</div>`
+            ).join('') +
+            `</div>`;
         }
+
+        infoBody.innerHTML +=
+          `<div style="font-size:11px;color:var(--muted)">` +
+          `After splitting: give each new page a clear title and a one-sentence introduction, ` +
+          `then add cross-references between the related pages so readers can navigate between them. ` +
+          `Update the table of contents to reflect the new structure.</div></div>`;
+      }
+
+      // Duplicate warning — check connected duplicate and potential-duplicate edges
+      const dupEdges = node.connectedEdges('[type = "duplicate"]');
+      const potDupEdges = node.connectedEdges('[type = "shared_concept"][?potential_duplicate]');
+      const allDupEdges = dupEdges.union(potDupEdges);
+      if (allDupEdges.length > 0) {
+        const hardDups = dupEdges.length;
+        const softDups = potDupEdges.length;
+        const total = allDupEdges.length;
+
+        // Collect the other node in each duplicate relationship
+        const dupPeers = allDupEdges.map(e => {
+          const otherId = e.data('source') === d.id ? e.data('target') : e.data('source');
+          const other = cy.getElementById(otherId);
+          const isHard = e.data('type') === 'duplicate';
+          const score = isHard
+            ? Math.round((e.data('jaccard') || 0) * 100) + '%'
+            : Math.round((e.data('overlap_coefficient') || 0) * 100) + '%';
+          return { label: other.data('label') || otherId, isHard, score };
+        });
+
+        const intro = hardDups > 0
+          ? `<strong style="color:#f0a030">${hardDups} near-identical page${hardDups > 1 ? 's' : ''}</strong> ` +
+            `detected via phrase-level text overlap (word trigram Jaccard).` +
+            (softDups > 0 ? ` Also shares substantial content with <strong style="color:#f0a030">${softDups}</strong> further page${softDups > 1 ? 's' : ''}.` : '')
+          : `Shares substantial content with <strong style="color:#f0a030">${softDups} other page${softDups > 1 ? 's' : ''}</strong> — ` +
+            `these pages cover overlapping topics and may confuse readers about where to go.`;
+
+        infoBody.innerHTML +=
+          `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">` +
+          `<div style="font-size:11px;color:#f0a030;font-weight:600;margin-bottom:6px">⚠ Duplicate content detected</div>` +
+          `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${intro}</div>` +
+          `<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">` +
+          dupPeers.map(p =>
+            `<div style="display:flex;align-items:baseline;gap:6px;font-size:11px">` +
+            `<span style="color:#f0a030;flex-shrink:0">${p.isHard ? '⚠' : '~'}</span>` +
+            `<span style="color:var(--text);flex:1">${esc(p.label)}</span>` +
+            `<span style="color:var(--muted);flex-shrink:0">${p.score} overlap</span>` +
+            `</div>`
+          ).join('') +
+          `</div>` +
+          `<div style="font-size:11px;color:var(--muted)">` +
+          (hardDups > 0
+            ? `Consider <strong style="color:var(--text)">merging</strong> the near-identical pages. Keep the most complete version and replace the other with a redirect.`
+            : `Consider adding a short <strong style="color:var(--text)">"This page covers…"</strong> paragraph at the top of each page so readers can quickly tell them apart, or extract the shared content into a dedicated explanation page and link to it from both.`) +
+          `</div></div>`;
       }
 
       // Headings
@@ -560,7 +622,29 @@
           : 'These pages cover related topics and may benefit from cross-references.';
         infoBody.innerHTML += `<div style="margin-top:10px;font-size:11px;color:var(--muted)">${note}</div>`;
       } else if (d.type === 'duplicate') {
-        const jaccard = d.jaccard != null ? Math.round(d.jaccard * 100) + '%' : (d.label || '—');
+        const jRaw = d.jaccard != null ? d.jaccard : null;
+        const jaccard = jRaw != null ? Math.round(jRaw * 100) + '%' : (d.label || '—');
+        const srcType = src.data('type') || '';
+        const tgtType = tgt.data('type') || '';
+        const sameSection = srcType && tgtType && srcType === tgtType;
+
+        // Pick recommendation based on overlap strength and Diataxis type
+        let recommendation;
+        if (jRaw != null && jRaw >= 0.60) {
+          recommendation =
+            `These pages are nearly identical. <strong>Merge them</strong> into one, keeping whichever version is more complete. ` +
+            `Delete the other and replace it with a redirect.`;
+        } else if (sameSection) {
+          recommendation =
+            `Both pages are in the same documentation category (<em>${esc(srcType.replace('-', '\u2011'))}</em>) and share a large portion of text. ` +
+            `<strong>Merge them</strong> or clearly differentiate their scope \u2014 add a short "This page covers…" paragraph at the top of each so readers understand which one they need.`;
+        } else {
+          recommendation =
+            `These pages are in different categories but share substantial phrasing. ` +
+            `Consider <strong>extracting the shared content</strong> into a single reusable snippet or explanation page, ` +
+            `then link to it from both pages instead of repeating the text.`;
+        }
+
         infoTitle.textContent = 'Potential duplicate';
         infoBody.innerHTML =
           `<div class="dup-badge">⚠ Potential duplicate</div>` +
@@ -569,8 +653,10 @@
           `<div style="margin-bottom:10px">${nodeChip(tgtLabel, tgtColor)}</div>` +
           `<div class="info-row"><span class="info-key">text overlap</span>` +
           `<span class="info-val" style="font-weight:600;color:#f0a030">${jaccard}</span></div>` +
-          `<div style="margin-top:10px;font-size:11px;color:var(--muted)">` +
-          `High phrase-level overlap detected. These pages likely contain copy-pasted content and may need to be merged or differentiated.</div>`;
+          `<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">` +
+          `<div style="font-size:11px;color:#f0a030;font-weight:600;margin-bottom:6px">Recommended action</div>` +
+          `<div style="font-size:11px;color:var(--muted);line-height:1.6">${recommendation}</div>` +
+          `</div>`;
       }
 
       infoHeadings.innerHTML = '';
