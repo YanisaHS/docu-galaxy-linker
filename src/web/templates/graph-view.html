@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocuGalaxy — {{ title }}</title>
 
-  <!-- Cytoscape.js + fcose layout (served locally) -->
+  <!-- Cytoscape.js + extensions (served locally) -->
+  <link rel="stylesheet" href="/static/css/cytoscape.js-navigator.css" />
   <script src="/static/js/cytoscape.min.js"></script>
   <script src="/static/js/layout-base.js"></script>
   <script src="/static/js/cose-base.js"></script>
   <script src="/static/js/cytoscape-fcose.js"></script>
+  <script src="/static/js/cytoscape-navigator.js"></script>
 
   <style>
     :root {
@@ -346,6 +348,138 @@
       z-index: 50;
       font-size: 12px;
     }
+
+    /* ---- Toast notifications ---- */
+    #toast {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 18px;
+      color: var(--text);
+      z-index: 200;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    #toast.visible { opacity: 1; }
+
+    /* ---- Help overlay (? key) ---- */
+    #help-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+    }
+    #help-overlay.visible { display: flex; }
+    #help-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 28px;
+      width: min(520px, 90vw);
+      max-height: 80vh;
+      overflow-y: auto;
+      color: var(--text);
+    }
+    #help-card h3 { color: var(--accent); margin-bottom: 12px; }
+    #help-card table { width: 100%; border-collapse: collapse; }
+    #help-card td {
+      padding: 5px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    #help-card td:first-child {
+      width: 90px;
+      color: var(--muted);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    #help-card kbd {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11px;
+    }
+    #help-close {
+      float: right;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+      margin-top: -8px;
+    }
+
+    /* ---- Action buttons inside the info panel ---- */
+    .info-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .info-actions a, .info-actions button {
+      flex: 1 1 auto;
+      text-decoration: none;
+      text-align: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--accent);
+      padding: 5px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      width: auto;
+    }
+    .info-actions a:hover, .info-actions button:hover { background: var(--border); }
+
+    .info-tabs { display: flex; gap: 0; margin-top: 10px; border-bottom: 1px solid var(--border); }
+    .info-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      width: auto;
+      border-radius: 0;
+    }
+    .info-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .info-list ul { list-style: none; padding: 0; margin-top: 6px; }
+    .info-list li {
+      font-size: 11px;
+      padding: 2px 0;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .info-list li:hover { color: var(--accent); }
+    .info-list .empty { color: var(--muted); font-size: 11px; padding-top: 4px; }
+
+    /* Minimap (cytoscape-navigator) — restyle for dark theme */
+    .cytoscape-navigator {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 6px;
+      width: 180px !important;
+      height: 130px !important;
+      bottom: 20px !important;
+      left: 280px !important;
+      right: auto !important;
+      opacity: 0.85;
+    }
+    .cytoscape-navigatorView { background: rgba(88, 166, 255, 0.25) !important; }
   </style>
 </head>
 <body>
@@ -385,13 +519,14 @@
 
   <!-- Presets -->
   <div class="sidebar-section">
-    <h2>Quick views</h2>
+    <h2>Quick views <span style="color:var(--muted);font-weight:400">(1–6)</span></h2>
     <div class="preset-grid">
-      <button class="preset-btn active" data-preset="all">All</button>
-      <button class="preset-btn" data-preset="docs">Docs only</button>
-      <button class="preset-btn" data-preset="hubs">Top hubs</button>
-      <button class="preset-btn" data-preset="orphans">Orphans</button>
-      <button class="preset-btn" data-preset="deadends">Dead ends</button>
+      <button class="preset-btn active" data-preset="all" data-key="1">All</button>
+      <button class="preset-btn" data-preset="docs" data-key="2">Docs only</button>
+      <button class="preset-btn" data-preset="hubs" data-key="3">Top hubs</button>
+      <button class="preset-btn" data-preset="orphans" data-key="4">Orphans</button>
+      <button class="preset-btn" data-preset="deadends" data-key="5">Dead ends</button>
+      <button class="preset-btn" data-preset="broken" data-key="6">Broken refs</button>
     </div>
   </div>
 
@@ -473,7 +608,41 @@
     <button id="info-close">✕</button>
     <h3 id="info-title"></h3>
     <div id="info-body"></div>
-    <div id="info-neighbours"></div>
+    <div class="info-actions" id="info-actions"></div>
+    <div class="info-tabs" id="info-tabs">
+      <button class="info-tab active" data-tab="incoming">⬅ Linked from</button>
+      <button class="info-tab" data-tab="outgoing">Links to ➡</button>
+    </div>
+    <div class="info-list" id="info-list"></div>
+  </div>
+
+  <!-- Minimap container -->
+  <div id="cy-minimap"></div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Help overlay -->
+  <div id="help-overlay">
+    <div id="help-card">
+      <button id="help-close">✕</button>
+      <h3>Keyboard shortcuts</h3>
+      <table>
+        <tr><td><kbd>/</kbd></td><td>Focus search</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Clear / close panels</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>Switch quick view (All / Docs / Hubs / Orphans / Dead ends / Broken)</td></tr>
+        <tr><td><kbd>i</kbd></td><td>Toggle internal vs external view</td></tr>
+        <tr><td><kbd>f</kbd></td><td>Fit graph</td></tr>
+        <tr><td><kbd>r</kbd></td><td>Re-run layout</td></tr>
+        <tr><td><kbd>o</kbd></td><td>Open source URL of selected node</td></tr>
+        <tr><td><kbd>c</kbd></td><td>Copy selected node's impact list as Markdown</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Show / hide this help</td></tr>
+      </table>
+      <p style="color:var(--muted);font-size:11px;margin-top:14px">
+        Pro tip: the URL fragment reflects the selected node and preset — copy
+        the URL to share a view.
+      </p>
+    </div>
   </div>
 </div>
 

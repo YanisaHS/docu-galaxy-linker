@@ -35,9 +35,18 @@ def cli() -> None:
               help='Also write a Cytoscape.js elements JSON file.')
 @click.option('--project-name', default=None,
               help='Tag all nodes with this project name (used in multi-project merges).')
+@click.option('--source-base', default=None,
+              help='Base URL for source files (e.g. https://github.com/canonical/'
+                   'landscape-documentation/blob/main/). Attached to each '
+                   'document node as metadata.source_url.')
+@click.option('--render-base', default=None,
+              help='Base URL for the rendered docs site (e.g. https://'
+                   'documentation.ubuntu.com/landscape/latest/). Attached as '
+                   'metadata.render_url.')
 @click.option('--verbose', '-v', is_flag=True, help='Show per-file progress.')
 def extract(project_path: str, output: str, cytoscape: str | None,
-            project_name: str | None, verbose: bool) -> None:
+            project_name: str | None, source_base: str | None,
+            render_base: str | None, verbose: bool) -> None:
     """Extract all links from PROJECT_PATH and save a graph JSON.
 
     PROJECT_PATH is the root directory of a documentation project
@@ -45,7 +54,12 @@ def extract(project_path: str, output: str, cytoscape: str | None,
     """
     click.echo(f'Extracting links from: {project_path}')
 
-    orchestrator = ExtractorOrchestrator(project_path, project_name=project_name)
+    orchestrator = ExtractorOrchestrator(
+        project_path,
+        project_name=project_name,
+        source_base=source_base,
+        render_base=render_base,
+    )
     orchestrator.extract(verbose=verbose)
     orchestrator.save(output, cytoscape_path=cytoscape, verbose=verbose)
 
@@ -168,7 +182,25 @@ def fetch_projects(projects_file: str, dest: str, output_dir: str, verbose: bool
         docs_dir = _find_docs_dir(repo_dir)
         click.echo(f'  Extracting from: {docs_dir}')
 
-        orchestrator = ExtractorOrchestrator(str(docs_dir), project_name=repo_name)
+        # Derive a sensible default source_base from the GitHub clone URL,
+        # rooted at the docs directory relative to the repo.
+        source_base = None
+        if url.startswith('https://github.com/'):
+            base = url.rstrip('/')
+            if base.endswith('.git'):
+                base = base[:-4]
+            try:
+                docs_rel = docs_dir.resolve().relative_to(repo_dir.resolve()).as_posix()
+            except ValueError:
+                docs_rel = ''
+            suffix = ('/' + docs_rel.rstrip('/') + '/') if docs_rel else '/'
+            source_base = f'{base}/blob/main{suffix}'
+
+        orchestrator = ExtractorOrchestrator(
+            str(docs_dir),
+            project_name=repo_name,
+            source_base=source_base,
+        )
         orchestrator.extract(verbose=verbose)
         orchestrator.save(str(graph_file), cytoscape_path=str(cy_file), verbose=verbose)
 
@@ -277,6 +309,71 @@ def merge(graph_files: tuple[str, ...], output: str, cytoscape: str | None) -> N
         with open(cytoscape, 'w', encoding='utf-8') as f:
             json.dump(export_cytoscape_json(node_objs, edge_objs), f, indent=2)
         click.echo(f'Cytoscape data → {cytoscape}')
+
+
+# ---------------------------------------------------------------------------
+# report
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('graph_json', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option('--output', '-o', default='-',
+              help="Output path (default '-' = stdout).")
+@click.option('--format', '-f', 'fmt', default='markdown', show_default=True,
+              type=click.Choice(['markdown', 'json', 'text', 'csv']),
+              help='Output format.')
+@click.option('--limit', default=25, show_default=True, type=int,
+              help='Max rows to show per section.')
+def report(graph_json: str, output: str, fmt: str, limit: int) -> None:
+    """Print a structured report of a graph: hubs, orphans, broken refs, etc.
+
+    The report is the main workflow tool — feed it into a PR comment, file
+    findings as issues, or pipe through grep/jq.
+    """
+    from .report import write_report
+    text = write_report(graph_json, None if output == '-' else output,
+                        fmt=fmt, limit=limit)
+    if output == '-':
+        click.echo(text, nl=False)
+    else:
+        click.echo(f'Report → {output}')
+
+
+# ---------------------------------------------------------------------------
+# diff
+# ---------------------------------------------------------------------------
+
+@cli.command()
+@click.argument('base_graph', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.argument('head_graph', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option('--output', '-o', default='-', help="Output path (default '-' = stdout).")
+@click.option('--format', '-f', 'fmt', default='markdown', show_default=True,
+              type=click.Choice(['markdown', 'json', 'text']),
+              help='Output format.')
+@click.option('--fail-on-regression/--no-fail-on-regression', default=True,
+              show_default=True,
+              help='Exit with code 1 if BASE → HEAD adds orphans, dead ends, '
+                   'or broken refs. Suitable for CI gating.')
+def diff(base_graph: str, head_graph: str, output: str, fmt: str,
+         fail_on_regression: bool) -> None:
+    """Compare BASE_GRAPH against HEAD_GRAPH and report regressions.
+
+    Typical CI flow: extract on the PR base ref, extract on the head, then run
+    `docu-galaxy-linker diff base.json head.json -o diff.md` and post the
+    markdown as a PR comment.
+    """
+    from .diff import write_diff
+    text, regressions = write_diff(
+        base_graph, head_graph,
+        None if output == '-' else output,
+        fmt=fmt,
+    )
+    if output == '-':
+        click.echo(text, nl=False)
+    else:
+        click.echo(f'Diff → {output}  (regressions: {regressions})')
+    if fail_on_regression and regressions > 0:
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

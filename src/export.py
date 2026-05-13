@@ -21,15 +21,25 @@ def export_cytoscape_json(nodes: list[Node], edges: list[Edge]) -> list[dict[str
     elements: list[dict[str, Any]] = []
 
     for node in nodes:
+        meta = node.metadata or {}
+        data: dict[str, Any] = {
+            'id': node.id,
+            'label': node.label,
+            'type': node.node_type,
+            'path': node.path,
+            'url': node.url,
+            'project': node.project,
+        }
+        # Flatten select metadata fields into the element so Cytoscape
+        # selectors / the viz can use them directly.
+        if meta.get('diataxis'):    data['diataxis']    = meta['diataxis']
+        if meta.get('source_url'):  data['source_url']  = meta['source_url']
+        if meta.get('render_url'):  data['render_url']  = meta['render_url']
+        if meta.get('resolved') is False:
+            data['broken'] = 'true'
+
         elements.append({
-            'data': {
-                'id': node.id,
-                'label': node.label,
-                'type': node.node_type,
-                'path': node.path,
-                'url': node.url,
-                'project': node.project,
-            },
+            'data': data,
             'classes': ' '.join(filter(None, [node.node_type, node.project])),
         })
 

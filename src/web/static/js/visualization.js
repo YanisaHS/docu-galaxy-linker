@@ -1,31 +1,26 @@
-/* visualization.js — DocuGalaxy interactive graph */
+/* visualization.js — DocuGalaxy interactive graph
+ *
+ * Data source adapter:
+ *   - If window.__DGL_DATA__ = { elements, stats } is set (standalone bundle),
+ *     use it.
+ *   - Otherwise fetch /api/graph + /api/stats (Flask server).
+ *
+ * This indirection means the bundler doesn't have to patch this file.
+ */
 (function () {
   'use strict';
 
   // ---------------------------------------------------------------------------
-  // Diataxis sections (Canonical / Landscape docs convention)
+  // Diataxis sections + colours
   // ---------------------------------------------------------------------------
   const DIATAXIS_COLORS = {
-    tutorial:    '#f0883e',  // orange — guided learning
-    'how-to':    '#7ee787',  // green  — task-oriented
-    reference:   '#79c0ff',  // blue   — information lookup
-    explanation: '#bc8cff',  // purple — understanding
-    meta:        '#8b949e',  // grey   — contributing, index, release-notes
+    tutorial:    '#f0883e',
+    'how-to':    '#7ee787',
+    reference:   '#79c0ff',
+    explanation: '#bc8cff',
+    meta:        '#8b949e',
   };
 
-  function diataxisSection(node) {
-    if (node.type !== 'document') return null;
-    const path = (node.path || node.id || '').toLowerCase();
-    if (path.startsWith('tutorial')) return 'tutorial';
-    if (path.startsWith('how-to')) return 'how-to';
-    if (path.startsWith('reference')) return 'reference';
-    if (path.startsWith('explanation')) return 'explanation';
-    return 'meta';
-  }
-
-  // ---------------------------------------------------------------------------
-  // Fallback colours by node type
-  // ---------------------------------------------------------------------------
   const NODE_COLORS = {
     document: '#58a6ff',
     external: '#f0883e',
@@ -52,63 +47,88 @@
   ]);
   const EXTERNAL_EDGE_TYPES = new Set(['external_link']);
 
-  // ---------------------------------------------------------------------------
-  // Node size scaling — intensity = sqrt(in + out degree)
-  // ---------------------------------------------------------------------------
   const MIN_SIZE = 14;
   const MAX_SIZE = 80;
 
-  function computeSizes(elements) {
-    const inDeg  = new Map();
-    const outDeg = new Map();
-    for (const el of elements) {
-      const d = el.data;
-      if (!d.source) continue; // node
+  // ---------------------------------------------------------------------------
+  // Data loader (adapter pattern)
+  // ---------------------------------------------------------------------------
+  async function loadData() {
+    if (window.__DGL_DATA__) {
+      return window.__DGL_DATA__;
     }
-    for (const el of elements) {
-      const d = el.data;
-      if (!d.source) continue; // edge only
-      outDeg.set(d.source, (outDeg.get(d.source) || 0) + 1);
-      inDeg.set(d.target,  (inDeg.get(d.target)  || 0) + 1);
-    }
-    let maxIntensity = 0;
-    for (const el of elements) {
-      const d = el.data;
-      if (d.source) continue;
-      const intensity = Math.sqrt((inDeg.get(d.id) || 0) + (outDeg.get(d.id) || 0));
-      d._intensity = intensity;
-      d._inDeg  = inDeg.get(d.id)  || 0;
-      d._outDeg = outDeg.get(d.id) || 0;
-      if (intensity > maxIntensity) maxIntensity = intensity;
-    }
-    for (const el of elements) {
-      const d = el.data;
-      if (d.source) continue;
-      const t = maxIntensity > 0 ? d._intensity / maxIntensity : 0;
-      d.size = Math.round(MIN_SIZE + t * (MAX_SIZE - MIN_SIZE));
-    }
-    return { inDeg, outDeg, maxIntensity };
+    const [g, s] = await Promise.all([
+      fetch('/api/graph'),
+      fetch('/api/stats'),
+    ]);
+    if (!g.ok) throw new Error(`/api/graph returned ${g.status}`);
+    return {
+      elements: await g.json(),
+      stats: s.ok ? await s.json() : null,
+    };
   }
 
   // ---------------------------------------------------------------------------
-  // Cytoscape stylesheet
+  // Pre-processing
+  // ---------------------------------------------------------------------------
+  function dedupeAndAnnotate(elements) {
+    const nodes = [];
+    const edgeMap = new Map(); // key=src->tgt
+    for (const el of elements) {
+      const d = el.data;
+      if (!d.source) { nodes.push(el); continue; }
+      const key = `${d.source}->${d.target}`;
+      const existing = edgeMap.get(key);
+      if (existing) {
+        existing.data.weight += 1;
+      } else {
+        d.weight = 1;
+        edgeMap.set(key, el);
+      }
+    }
+    const edges = Array.from(edgeMap.values());
+
+    // Compute in/out degree + node size (intensity = sqrt(in+out))
+    const inDeg  = new Map();
+    const outDeg = new Map();
+    for (const e of edges) {
+      const d = e.data;
+      outDeg.set(d.source, (outDeg.get(d.source) || 0) + 1);
+      inDeg.set(d.target,  (inDeg.get(d.target)  || 0) + 1);
+    }
+    let maxI = 0;
+    for (const n of nodes) {
+      const d = n.data;
+      d._inDeg  = inDeg.get(d.id)  || 0;
+      d._outDeg = outDeg.get(d.id) || 0;
+      d._intensity = Math.sqrt(d._inDeg + d._outDeg);
+      if (d._intensity > maxI) maxI = d._intensity;
+    }
+    for (const n of nodes) {
+      const d = n.data;
+      const t = maxI > 0 ? d._intensity / maxI : 0;
+      d.size = Math.round(MIN_SIZE + t * (MAX_SIZE - MIN_SIZE));
+    }
+
+    return nodes.concat(edges);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Stylesheet
   // ---------------------------------------------------------------------------
   function buildStylesheet() {
-    const diataxisRules = Object.entries(DIATAXIS_COLORS).map(([sec, color]) => ({
+    const dia = Object.entries(DIATAXIS_COLORS).map(([sec, c]) => ({
       selector: `node[diataxis = "${sec}"]`,
-      style: { 'background-color': color },
+      style: { 'background-color': c },
     }));
-
-    const nodeTypeRules = Object.entries(NODE_COLORS).map(([type, color]) => ({
-      selector: `node[type = "${type}"]`,
-      style: { 'background-color': color },
+    const nodeType = Object.entries(NODE_COLORS).map(([t, c]) => ({
+      selector: `node[type = "${t}"]`,
+      style: { 'background-color': c },
     }));
-
-    const edgeRules = Object.entries(EDGE_COLORS).map(([type, color]) => ({
-      selector: `edge[type = "${type}"]`,
-      style: { 'line-color': color, 'target-arrow-color': color },
+    const edgeType = Object.entries(EDGE_COLORS).map(([t, c]) => ({
+      selector: `edge[type = "${t}"]`,
+      style: { 'line-color': c, 'target-arrow-color': c },
     }));
-
     return [
       {
         selector: 'node',
@@ -123,17 +143,20 @@
           width:  'data(size)',
           height: 'data(size)',
           'border-width': 0,
-          'overlay-padding': 4,
         },
       },
-      // Hide labels for tiny nodes unless hovered/selected
+      { selector: 'node[size <= 22]', style: { 'text-opacity': 0 } },
+      ...nodeType,
+      ...dia,
+      ...edgeType,
       {
-        selector: 'node[size <= 22]',
-        style: { 'text-opacity': 0 },
+        selector: 'node[broken = "true"]',
+        style: {
+          'border-width': 2,
+          'border-color': '#f85149',
+          'border-style': 'dashed',
+        },
       },
-      ...nodeTypeRules,    // type fallback (applied first)
-      ...diataxisRules,    // diataxis overrides type for documents
-      ...edgeRules,
       {
         selector: 'node:selected, node.highlighted',
         style: {
@@ -142,86 +165,54 @@
           'text-opacity': 1,
         },
       },
-      {
-        selector: 'node.dimmed',
-        style: { opacity: 0.08, 'text-opacity': 0 },
-      },
+      { selector: 'node.dimmed', style: { opacity: 0.08, 'text-opacity': 0 } },
       {
         selector: 'edge',
         style: {
-          width:  'mapData(weight, 1, 10, 1, 5)',
+          width: 'mapData(weight, 1, 10, 1, 5)',
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
           'arrow-scale': 0.7,
           opacity: 0.55,
         },
       },
-      {
-        selector: 'edge.dimmed',
-        style: { opacity: 0.03 },
-      },
-      {
-        selector: 'edge:selected, edge.highlighted',
-        style: { width: 3, opacity: 1 },
-      },
-      {
-        selector: 'node:active',
-        style: { 'overlay-opacity': 0.2, 'overlay-color': '#f8e3a1' },
-      },
+      { selector: 'edge.dimmed', style: { opacity: 0.03 } },
+      { selector: 'edge:selected, edge.highlighted', style: { width: 3, opacity: 1 } },
     ];
   }
 
   // ---------------------------------------------------------------------------
-  // Edge dedup: collapse parallel edges between the same (source,target) pair
-  // ---------------------------------------------------------------------------
-  function dedupeEdges(elements) {
-    const edges = [];
-    const nodes = [];
-    const seen = new Map();
-    for (const el of elements) {
-      const d = el.data;
-      if (!d.source) { nodes.push(el); continue; }
-      const key = `${d.source}->${d.target}`;
-      if (seen.has(key)) {
-        const existing = seen.get(key);
-        existing.data.weight += 1;
-        // Keep the strongest edge type label
-        existing.data.labels = (existing.data.labels || [existing.data.label || existing.data.type]);
-        existing.data.labels.push(d.label || d.type);
-        continue;
-      }
-      d.weight = 1;
-      seen.set(key, el);
-      edges.push(el);
-    }
-    return nodes.concat(edges);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Layout helpers
+  // Layout
   // ---------------------------------------------------------------------------
   function layoutOptions(name, visibleEles) {
-    const animate = visibleEles.length < 350;
+    const n = visibleEles.length;
+    const animate = n < 350;
     if (name === 'fcose') {
+      // Scale spacing with the number of visible elements so small graphs
+      // don't drift apart and big graphs don't pile up.
+      const ideal = Math.max(70, Math.min(180, 60 + Math.sqrt(n) * 4));
       return {
         name: 'fcose',
         animate,
-        randomize: false,
+        randomize: true,           // bad initial positions otherwise
         quality: 'default',
-        nodeRepulsion: 8000,
-        idealEdgeLength: 90,
-        edgeElasticity: 0.45,
-        gravity: 0.25,
+        nodeRepulsion: 6500,
+        idealEdgeLength: ideal,
+        edgeElasticity: 0.35,
+        gravity: 0.2,
+        gravityRangeCompound: 1.5,
         numIter: 2500,
         nodeDimensionsIncludeLabels: true,
-        padding: 30,
+        uniformNodeDimensions: false,
+        packComponents: true,      // lay out disconnected components nicely
+        padding: 40,
       };
     }
     if (name === 'concentric') {
       return {
         name: 'concentric',
         animate,
-        concentric: n => (n.data('_intensity') || 0),
+        concentric: node => (node.data('_intensity') || 0),
         levelWidth: () => 1,
         minNodeSpacing: 14,
         padding: 30,
@@ -233,6 +224,7 @@
   function runLayout(cy, animate) {
     const name = document.getElementById('layout-select').value;
     const visibleEles = cy.elements(':visible');
+    if (visibleEles.length === 0) return;
     const opts = layoutOptions(name, visibleEles);
     opts.eles = visibleEles;
     if (!animate) opts.animate = false;
@@ -241,16 +233,37 @@
   }
 
   // ---------------------------------------------------------------------------
-  // View management  (internal / external)
+  // View / preset state (URL-synced)
   // ---------------------------------------------------------------------------
-  let currentView = 'internal';
-  let currentPreset = 'all';
+  const state = { view: 'internal', preset: 'all', sel: null };
 
+  function readHash() {
+    const h = window.location.hash.replace(/^#/, '');
+    const params = new URLSearchParams(h);
+    if (params.has('view'))   state.view   = params.get('view');
+    if (params.has('preset')) state.preset = params.get('preset');
+    if (params.has('sel'))    state.sel    = params.get('sel');
+  }
+
+  function writeHash() {
+    const params = new URLSearchParams();
+    if (state.view !== 'internal') params.set('view', state.view);
+    if (state.preset !== 'all')    params.set('preset', state.preset);
+    if (state.sel)                 params.set('sel', state.sel);
+    const h = params.toString();
+    const newHash = h ? '#' + h : '';
+    if (newHash !== window.location.hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // View / preset filtering
+  // ---------------------------------------------------------------------------
   function applyView(view, cy) {
-    currentView = view;
+    state.view = view;
     cy.batch(() => {
       cy.elements().style('display', 'element');
-
       if (view === 'internal') {
         cy.edges().forEach(e => {
           if (!INTERNAL_EDGE_TYPES.has(e.data('type'))) e.style('display', 'none');
@@ -264,61 +277,238 @@
           if (!EXTERNAL_EDGE_TYPES.has(e.data('type'))) e.style('display', 'none');
         });
         cy.nodes().forEach(n => {
-          const hasExternal = n.connectedEdges().some(e => e.data('type') === 'external_link');
-          if (!hasExternal) n.style('display', 'none');
+          const hasExt = n.connectedEdges().some(e => e.data('type') === 'external_link');
+          if (!hasExt) n.style('display', 'none');
         });
       }
     });
-
     document.querySelectorAll('.edge-toggle').forEach(cb => {
       if (!cb.checked) cy.edges(`[type = "${cb.value}"]`).style('display', 'none');
     });
-
-    applyPreset(currentPreset, cy);
-    runLayout(cy, false);
+    applyPreset(state.preset, cy);
+    writeHash();
   }
 
   function applyPreset(preset, cy) {
-    currentPreset = preset;
+    state.preset = preset;
     document.querySelectorAll('.preset-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.preset === preset);
     });
-
     if (preset === 'all') {
-      // Nothing extra to hide beyond view filtering
+      writeHash();
       return;
     }
-
     cy.batch(() => {
       if (preset === 'docs') {
         cy.nodes().forEach(n => {
           if (n.data('type') !== 'document') n.style('display', 'none');
         });
       } else if (preset === 'orphans') {
-        // Documents with in-degree 0 (no incoming internal links)
         cy.nodes().forEach(n => {
           const isDoc = n.data('type') === 'document';
+          const broken = n.data('broken') === 'true';
           const orphan = (n.data('_inDeg') || 0) === 0;
-          if (!isDoc || !orphan) n.style('display', 'none');
+          if (!isDoc || broken || !orphan) n.style('display', 'none');
         });
       } else if (preset === 'deadends') {
         cy.nodes().forEach(n => {
           const isDoc = n.data('type') === 'document';
-          const dead  = (n.data('_outDeg') || 0) === 0;
-          if (!isDoc || !dead) n.style('display', 'none');
+          const broken = n.data('broken') === 'true';
+          const dead   = (n.data('_outDeg') || 0) === 0;
+          if (!isDoc || broken || !dead) n.style('display', 'none');
         });
       } else if (preset === 'hubs') {
         const docs = cy.nodes('[type = "document"]').toArray()
+          .filter(n => n.data('broken') !== 'true')
           .sort((a, b) => (b.data('_intensity') || 0) - (a.data('_intensity') || 0))
           .slice(0, 25);
         const keep = new Set(docs.map(n => n.id()));
-        // Also keep direct neighbours of the hubs
         docs.forEach(n => n.neighborhood('node').forEach(m => keep.add(m.id())));
+        cy.nodes().forEach(n => {
+          if (!keep.has(n.id())) n.style('display', 'none');
+        });
+      } else if (preset === 'broken') {
+        // Show every node flagged broken + nodes that link to one.
+        const broken = cy.nodes('[broken = "true"]');
+        const keep = new Set(broken.map(n => n.id()));
+        broken.forEach(n => n.incomers('node').forEach(m => keep.add(m.id())));
         cy.nodes().forEach(n => {
           if (!keep.has(n.id())) n.style('display', 'none');
         });
       }
     });
+    writeHash();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Info panel — impact analysis split
+  // ---------------------------------------------------------------------------
+  let activeInfoTab = 'incoming';
+
+  function showInfoPanel(node, cy) {
+    const data = node.data();
+    state.sel = node.id();
+    writeHash();
+
+    cy.elements().addClass('dimmed');
+    node.removeClass('dimmed');
+    node.neighborhood().removeClass('dimmed');
+
+    document.getElementById('info-title').textContent = data.label || data.id;
+
+    const diaChip = data.diataxis
+      ? `<span style="display:inline-block;padding:1px 8px;border-radius:10px;
+                     background:${DIATAXIS_COLORS[data.diataxis]}22;
+                     border:1px solid ${DIATAXIS_COLORS[data.diataxis]};
+                     color:${DIATAXIS_COLORS[data.diataxis]};font-size:11px">
+          ${data.diataxis}</span> `
+      : '';
+    const brokenChip = data.broken === 'true'
+      ? `<span style="display:inline-block;padding:1px 8px;border-radius:10px;
+                      background:#f8514922;border:1px solid #f85149;
+                      color:#f85149;font-size:11px">broken</span> `
+      : '';
+
+    const rows = [
+      ['id', data.id],
+      ['type', data.type],
+      data.path ? ['path', data.path] : null,
+      data.url  ? ['url', `<a href="${escHtml(data.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${escHtml(data.url)}</a>`] : null,
+      ['in-degree',  data._inDeg  ?? node.indegree()],
+      ['out-degree', data._outDeg ?? node.outdegree()],
+      ['intensity',  (data._intensity || 0).toFixed(2)],
+    ].filter(Boolean);
+
+    document.getElementById('info-body').innerHTML = diaChip + brokenChip + rows.map(([k, v]) =>
+      `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${k === 'url' ? v : escHtml(v)}</span></div>`
+    ).join('');
+
+    // Action buttons (open source, open URL, copy markdown)
+    const actions = [];
+    if (data.source_url) {
+      actions.push(`<a href="${escHtml(data.source_url)}" target="_blank" rel="noopener">📄 Open source</a>`);
+    }
+    if (data.render_url) {
+      actions.push(`<a href="${escHtml(data.render_url)}" target="_blank" rel="noopener">🌐 Open page</a>`);
+    }
+    if (data.url && data.type === 'external') {
+      actions.push(`<a href="${escHtml(data.url)}" target="_blank" rel="noopener">↗ Open URL</a>`);
+    }
+    actions.push(`<button id="info-copy">📋 Copy impact as Markdown</button>`);
+    document.getElementById('info-actions').innerHTML = actions.join('');
+    document.getElementById('info-copy').addEventListener('click', () => copyImpactMarkdown(node));
+
+    renderInfoList(node, cy, activeInfoTab);
+
+    document.getElementById('info-panel').classList.add('visible');
+  }
+
+  function renderInfoList(node, cy, tab) {
+    activeInfoTab = tab;
+    document.querySelectorAll('.info-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    const list = document.getElementById('info-list');
+    const edges = tab === 'incoming' ? node.incomers('edge') : node.outgoers('edge');
+    if (edges.length === 0) {
+      list.innerHTML = `<div class="empty">No ${tab} links.</div>`;
+      return;
+    }
+    const items = edges.toArray().map(e => {
+      const other = tab === 'incoming' ? e.source() : e.target();
+      const label = other.data('label') || other.id();
+      const linkText = e.data('label');
+      const annotation = linkText ? ` — <span style="color:var(--muted)">"${escHtml(linkText)}"</span>` : '';
+      return `<li data-id="${escHtml(other.id())}">${escHtml(label)}${annotation}</li>`;
+    });
+    list.innerHTML = `<ul>${items.slice(0, 50).join('')}${items.length > 50 ? `<li style="color:var(--muted)">…and ${items.length - 50} more</li>` : ''}</ul>`;
+    list.querySelectorAll('li[data-id]').forEach(li => {
+      li.addEventListener('click', () => {
+        const target = cy.getElementById(li.dataset.id);
+        if (target.length) {
+          cy.animate({ fit: { eles: target, padding: 80 }, duration: 400 });
+          target.emit('tap');
+        }
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Copy impact as Markdown checklist
+  // ---------------------------------------------------------------------------
+  function copyImpactMarkdown(node) {
+    const data = node.data();
+    const title = data.path || data.label || data.id;
+    const srcLink = data.source_url ? `[\`${title}\`](${data.source_url})` : `\`${title}\``;
+    const incoming = node.incomers('node').toArray();
+    const outgoing = node.outgoers('node').toArray();
+
+    const lines = [];
+    lines.push(`# Impact: ${title}`, '');
+    lines.push(`Source: ${srcLink}`);
+    if (data.diataxis) lines.push(`Diataxis: ${data.diataxis}`);
+    lines.push('');
+    lines.push(`## Linked from (${incoming.length}) — these break if this is renamed/removed`);
+    if (incoming.length === 0) {
+      lines.push('- _(no incoming links — orphan page)_');
+    } else {
+      for (const n of incoming) {
+        const p = n.data('path') || n.id();
+        const u = n.data('source_url');
+        lines.push(`- [ ] ${u ? `[\`${p}\`](${u})` : `\`${p}\``}`);
+      }
+    }
+    lines.push('');
+    lines.push(`## Links to (${outgoing.length}) — these are this page's dependencies`);
+    if (outgoing.length === 0) {
+      lines.push('- _(no outgoing links — dead end)_');
+    } else {
+      for (const n of outgoing) {
+        const p = n.data('path') || n.data('label') || n.id();
+        const u = n.data('source_url') || n.data('url');
+        lines.push(`- ${u ? `[\`${p}\`](${u})` : `\`${p}\``}`);
+      }
+    }
+
+    const text = lines.join('\n');
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => toast('Impact list copied to clipboard.'),
+        () => fallbackCopy(text),
+      );
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); toast('Copied.'); }
+    catch { toast('Copy failed — clipboard blocked.'); }
+    document.body.removeChild(ta);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Toast + help
+  // ---------------------------------------------------------------------------
+  let toastTimer = null;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('visible'), 1800);
+  }
+
+  function toggleHelp(show) {
+    const overlay = document.getElementById('help-overlay');
+    if (show === undefined) overlay.classList.toggle('visible');
+    else overlay.classList.toggle('visible', show);
   }
 
   // ---------------------------------------------------------------------------
@@ -345,32 +535,17 @@
       try { cytoscape.use(cytoscapeFcose); } catch (e) { /* already registered */ }
     }
 
-    let elements, statsData;
-    try {
-      const [elemRes, statsRes] = await Promise.all([
-        fetch('/api/graph'),
-        fetch('/api/stats'),
-      ]);
-      if (!elemRes.ok) throw new Error(`/api/graph returned ${elemRes.status}`);
-      elements = await elemRes.json();
-      statsData = statsRes.ok ? await statsRes.json() : null;
-    } catch (err) {
-      hideLoading();
-      showError(`Failed to load graph: ${err.message}`);
-      return;
-    }
+    let data;
+    try { data = await loadData(); }
+    catch (err) { hideLoading(); showError(`Failed to load graph: ${err.message}`); return; }
 
-    // Pre-process: dedupe parallel edges, tag Diataxis section, compute sizes
-    elements = dedupeEdges(elements);
-    for (const el of elements) {
-      const d = el.data;
-      if (d.source) continue;
-      const sec = diataxisSection(d);
-      if (sec) d.diataxis = sec;
-    }
-    computeSizes(elements);
+    // export_cytoscape_json flattens metadata (diataxis, source_url,
+    // render_url, broken) directly onto each node's data dict, so no
+    // post-processing is needed here.
+    let elements = dedupeAndAnnotate(data.elements);
 
     // Populate stats
+    const statsData = data.stats;
     if (statsData) {
       document.getElementById('stat-nodes').textContent = formatNumber(statsData.total_nodes);
       document.getElementById('stat-edges').textContent = formatNumber(statsData.total_edges);
@@ -380,60 +555,91 @@
     document.getElementById('graph-title').textContent =
       document.querySelector('title').textContent.replace('DocuGalaxy — ', '');
 
-    // Init Cytoscape
+    // URL state
+    readHash();
+
     const fcoseAvail = typeof cytoscapeFcose !== 'undefined';
     const cy = cytoscape({
       container: document.getElementById('cy'),
       elements,
       style: buildStylesheet(),
-      layout: fcoseAvail
-        ? { name: 'fcose', animate: false, randomize: false, quality: 'default',
-            nodeRepulsion: 8000, idealEdgeLength: 90, padding: 30 }
-        : { name: 'cose', animate: false, randomize: false, padding: 30 },
+      // Use a preset (no positions) so we can run a proper layout once
+      // visibility has been applied — avoids laying out hidden externals.
+      layout: { name: 'preset' },
       minZoom: 0.05,
       maxZoom: 6,
       wheelSensitivity: 0.3,
     });
 
-    // Set default layout option in the dropdown
     const layoutSelect = document.getElementById('layout-select');
-    if (fcoseAvail) layoutSelect.value = 'fcose';
+    if (fcoseAvail && !layoutSelect.value) layoutSelect.value = 'fcose';
 
-    applyView('internal', cy);
+    // Minimap
+    if (typeof cy.navigator === 'function') {
+      try {
+        cy.navigator({
+          container: document.getElementById('cy-minimap'),
+          viewLiveFramerate: 0,
+          thumbnailEventFramerate: 30,
+          thumbnailLiveFramerate: false,
+          dblClickDelay: 200,
+          removeCustomContainer: false,
+        });
+      } catch (e) { /* minimap optional */ }
+    }
+
+    applyView(state.view, cy);
+    if (state.preset !== 'all') applyPreset(state.preset, cy);
+
+    // Run the layout exactly once on the *visible* element set. Without
+    // this, the initial preset placement leaves every node at (0,0) and the
+    // graph renders as a single point/line.
+    runLayout(cy, false);
+
+    // Restore selection if hash had one
+    if (state.sel) {
+      const node = cy.getElementById(state.sel);
+      if (node.length) {
+        cy.animate({ fit: { eles: node, padding: 80 }, duration: 400 });
+        showInfoPanel(node, cy);
+      }
+    }
+
     hideLoading();
 
-    // View tabs
+    // ----- View tabs -----
     document.querySelectorAll('.view-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.view-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         applyView(btn.dataset.view, cy);
+        runLayout(cy, false);
       });
     });
 
-    // Preset buttons
+    // ----- Presets -----
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        applyView(currentView, cy); // resets visibility
+        applyView(state.view, cy);
         applyPreset(btn.dataset.preset, cy);
         runLayout(cy, false);
       });
     });
 
-    // Layout controls
+    // ----- Layout -----
     document.getElementById('btn-run-layout').addEventListener('click', () => runLayout(cy, true));
     document.getElementById('btn-fit').addEventListener('click',
       () => cy.fit(cy.elements(':visible'), 40));
 
-    // Edge type toggles
+    // ----- Edge toggles -----
     document.querySelectorAll('.edge-toggle').forEach(cb => {
       cb.addEventListener('change', () => {
         cy.edges(`[type = "${cb.value}"]`).style('display', cb.checked ? 'element' : 'none');
-        applyView(currentView, cy);
+        applyView(state.view, cy);
       });
     });
 
-    // Search / filter
+    // ----- Search -----
     const searchInput = document.getElementById('search-input');
     const searchInfo  = document.getElementById('search-info');
     searchInput.addEventListener('input', () => {
@@ -453,94 +659,109 @@
       searchInfo.textContent = `${matched.length} match${matched.length !== 1 ? 'es' : ''}`;
     });
 
-    // Hover highlight (1-hop)
+    // ----- Hover highlight -----
     cy.on('mouseover', 'node', evt => {
       const node = evt.target;
+      if (cy.$('node:selected').length) return; // don't override selection
       cy.elements().addClass('dimmed');
       node.removeClass('dimmed').addClass('highlighted');
       node.neighborhood().removeClass('dimmed');
-      node.connectedEdges().addClass('highlighted');
     });
     cy.on('mouseout', 'node', () => {
-      if (!cy.$('node:selected').length) {
-        cy.elements().removeClass('dimmed highlighted');
-      }
+      if (!cy.$('node:selected').length) cy.elements().removeClass('dimmed highlighted');
     });
 
-    // Info panel
-    const infoPanel = document.getElementById('info-panel');
-    const infoTitle = document.getElementById('info-title');
-    const infoBody  = document.getElementById('info-body');
-    const infoNeigh = document.getElementById('info-neighbours');
-    const infoClose = document.getElementById('info-close');
-
-    infoClose.addEventListener('click', () => {
-      infoPanel.classList.remove('visible');
-      cy.elements().removeClass('dimmed highlighted');
-      cy.$('node:selected').unselect();
-    });
-
-    cy.on('tap', 'node', evt => {
-      const node = evt.target;
-      const data = node.data();
-
-      cy.elements().addClass('dimmed');
-      node.removeClass('dimmed');
-      node.neighborhood().removeClass('dimmed');
-
-      infoTitle.textContent = data.label || data.id;
-
-      const diaChip = data.diataxis
-        ? `<span style="display:inline-block;padding:1px 8px;border-radius:10px;
-                       background:${DIATAXIS_COLORS[data.diataxis]}22;
-                       border:1px solid ${DIATAXIS_COLORS[data.diataxis]};
-                       color:${DIATAXIS_COLORS[data.diataxis]};font-size:11px">
-            ${data.diataxis}</span> `
-        : '';
-
-      const rows = [
-        ['id', data.id],
-        ['type', data.type],
-        data.path ? ['path', data.path] : null,
-        data.url  ? ['url', `<a href="${escHtml(data.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${escHtml(data.url)}</a>`] : null,
-        ['in-degree',  data._inDeg ?? node.indegree()],
-        ['out-degree', data._outDeg ?? node.outdegree()],
-        ['intensity',  (data._intensity || 0).toFixed(2)],
-      ].filter(Boolean);
-
-      infoBody.innerHTML = diaChip + rows.map(([k, v]) =>
-        `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${k === 'url' ? v : escHtml(v)}</span></div>`
-      ).join('');
-
-      const neigh = node.neighborhood('node').toArray().slice(0, 20);
-      if (neigh.length) {
-        infoNeigh.innerHTML =
-          `<h4>Connected nodes (${node.neighborhood('node').length})</h4><ul>` +
-          neigh.map(n => `<li data-id="${escHtml(n.id())}">${escHtml(n.data('label') || n.id())}</li>`).join('') +
-          (node.neighborhood('node').length > 20 ? '<li style="color:var(--muted)">…and more</li>' : '') +
-          '</ul>';
-        infoNeigh.querySelectorAll('li[data-id]').forEach(li => {
-          li.addEventListener('click', () => {
-            const target = cy.getElementById(li.dataset.id);
-            if (target.length) {
-              cy.animate({ fit: { eles: target, padding: 80 }, duration: 400 });
-              target.emit('tap');
-            }
-          });
-        });
-      } else {
-        infoNeigh.innerHTML = '';
-      }
-
-      infoPanel.classList.add('visible');
-    });
+    // ----- Click node -----
+    cy.on('tap', 'node', evt => showInfoPanel(evt.target, cy));
 
     cy.on('tap', evt => {
       if (evt.target === cy) {
-        infoPanel.classList.remove('visible');
-        cy.elements().removeClass('dimmed highlighted');
+        closeInfoPanel(cy);
         searchInput.value = '';
         searchInfo.textContent = '';
+      }
+    });
+
+    document.getElementById('info-close').addEventListener('click', () => closeInfoPanel(cy));
+    document.querySelectorAll('.info-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sel = cy.$('node:selected')[0];
+        if (sel) renderInfoList(sel, cy, btn.dataset.tab);
+      });
+    });
+
+    function closeInfoPanel(cy) {
+      document.getElementById('info-panel').classList.remove('visible');
+      cy.elements().removeClass('dimmed highlighted');
+      cy.$('node:selected').unselect();
+      state.sel = null;
+      writeHash();
+    }
+
+    // ----- Help overlay -----
+    document.getElementById('help-close').addEventListener('click', () => toggleHelp(false));
+    document.getElementById('help-overlay').addEventListener('click', e => {
+      if (e.target.id === 'help-overlay') toggleHelp(false);
+    });
+
+    // ----- Keyboard shortcuts -----
+    document.addEventListener('keydown', e => {
+      const inForm = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+      if (e.key === 'Escape') {
+        if (document.getElementById('help-overlay').classList.contains('visible')) {
+          toggleHelp(false); return;
+        }
+        if (inForm) { document.activeElement.blur(); return; }
+        closeInfoPanel(cy);
+        searchInput.value = ''; searchInfo.textContent = '';
+        return;
+      }
+      if (inForm) return;
+      if (e.key === '/') { e.preventDefault(); searchInput.focus(); return; }
+      if (e.key === '?') { toggleHelp(); return; }
+      if (e.key === 'f') { cy.fit(cy.elements(':visible'), 40); return; }
+      if (e.key === 'r') { runLayout(cy, true); return; }
+      if (e.key === 'i') {
+        const next = state.view === 'internal' ? 'external' : 'internal';
+        document.querySelectorAll('.view-tab').forEach(b => b.classList.toggle('active', b.dataset.view === next));
+        applyView(next, cy);
+        runLayout(cy, false);
+        return;
+      }
+      if (e.key === 'o') {
+        const sel = cy.$('node:selected')[0];
+        if (sel) {
+          const url = sel.data('source_url') || sel.data('url') || sel.data('render_url');
+          if (url) window.open(url, '_blank', 'noopener');
+        }
+        return;
+      }
+      if (e.key === 'c') {
+        const sel = cy.$('node:selected')[0];
+        if (sel) copyImpactMarkdown(sel);
+        return;
+      }
+      // 1..6: presets
+      const btn = document.querySelector(`.preset-btn[data-key="${e.key}"]`);
+      if (btn) btn.click();
+    });
+
+    // ----- Hashchange sync (back/forward, manual edits) -----
+    window.addEventListener('hashchange', () => {
+      const prev = { ...state };
+      readHash();
+      if (prev.view !== state.view || prev.preset !== state.preset) {
+        applyView(state.view, cy);
+        applyPreset(state.preset, cy);
+        runLayout(cy, false);
+      }
+      if (prev.sel !== state.sel) {
+        if (state.sel) {
+          const n = cy.getElementById(state.sel);
+          if (n.length) showInfoPanel(n, cy);
+        } else {
+          closeInfoPanel(cy);
+        }
       }
     });
   }

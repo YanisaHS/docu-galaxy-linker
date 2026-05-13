@@ -17,9 +17,16 @@ from .parsers.rst_parser import parse_rst_file
 
 
 class ExtractorOrchestrator:
-    def __init__(self, project_path: str, project_name: Optional[str] = None) -> None:
+    def __init__(self, project_path: str, project_name: Optional[str] = None,
+                 source_base: Optional[str] = None,
+                 render_base: Optional[str] = None) -> None:
         self.project_path = Path(project_path).resolve()
-        self.builder = GraphBuilder(str(self.project_path), project_name=project_name)
+        self.builder = GraphBuilder(
+            str(self.project_path),
+            project_name=project_name,
+            source_base=source_base,
+            render_base=render_base,
+        )
         self._errors: list[tuple[str, str]] = []  # (filepath, error_message)
 
     # ------------------------------------------------------------------
@@ -60,6 +67,8 @@ class ExtractorOrchestrator:
                 if verbose:
                     print(f'  WARNING: {rel}: {msg}')
 
+        # Post-pass: classify undefined labels as broken.
+        self.builder.finalize()
         return self
 
     # ------------------------------------------------------------------

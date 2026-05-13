@@ -6,7 +6,9 @@
       "type": "document",
       "path": "contributing.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/contributing.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -160,7 +162,9 @@
       "type": "document",
       "path": "explanation/charm/charm-compatibility.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/charm/charm-compatibility.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -226,7 +230,9 @@
       "type": "document",
       "path": "explanation/charm/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/charm/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -237,7 +243,9 @@
       "type": "document",
       "path": "explanation/features/activities.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/activities.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -281,7 +289,9 @@
       "type": "document",
       "path": "explanation/features/alerts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/alerts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -325,7 +335,9 @@
       "type": "document",
       "path": "explanation/features/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -336,7 +348,9 @@
       "type": "document",
       "path": "explanation/features/repository-mirroring.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/repository-mirroring.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -347,7 +361,9 @@
       "type": "document",
       "path": "explanation/features/package-reporting.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/package-reporting.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -358,7 +374,9 @@
       "type": "document",
       "path": "explanation/features/remote-script-execution.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/features/remote-script-execution.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -556,7 +574,9 @@
       "type": "document",
       "path": "explanation/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -567,7 +587,9 @@
       "type": "document",
       "path": "explanation/landscape/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -578,7 +600,9 @@
       "type": "document",
       "path": "explanation/security/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -589,7 +613,9 @@
       "type": "document",
       "path": "explanation/related-tools/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/related-tools/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -600,7 +626,9 @@
       "type": "document",
       "path": "explanation/landscape/about-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/about-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -644,7 +672,9 @@
       "type": "document",
       "path": "explanation/landscape/deployment-models.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/deployment-models.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -809,7 +839,9 @@
       "type": "document",
       "path": "explanation/landscape/self-hosted-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/self-hosted-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -820,7 +852,9 @@
       "type": "document",
       "path": "explanation/landscape/licenses.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/licenses.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -831,7 +865,9 @@
       "type": "document",
       "path": "explanation/landscape/landscape-server-architecture.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/landscape-server-architecture.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -842,7 +878,9 @@
       "type": "document",
       "path": "explanation/landscape/landscape-client-architecture.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/landscape/landscape-client-architecture.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1172,7 +1210,10 @@
       "type": "document",
       "path": "/how-to-guides/api/make-a-rest-api-request.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/api/make-a-rest-api-request.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -1183,7 +1224,10 @@
       "type": "document",
       "path": "/reference/api/rest-api-endpoints/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//reference/api/rest-api-endpoints/index.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -1194,7 +1238,10 @@
       "type": "document",
       "path": "/how-to-guides/api/use-the-legacy-api.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/api/use-the-legacy-api.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -1205,7 +1252,10 @@
       "type": "document",
       "path": "/reference/api/legacy-api-endpoints/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//reference/api/legacy-api-endpoints/index.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -1282,7 +1332,9 @@
       "type": "document",
       "path": "explanation/related-tools/ansible.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/related-tools/ansible.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1293,7 +1345,9 @@
       "type": "document",
       "path": "explanation/security/apparmor.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/apparmor.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1337,7 +1391,9 @@
       "type": "document",
       "path": "explanation/security/authentication-and-authorization.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/authentication-and-authorization.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1436,7 +1492,9 @@
       "type": "document",
       "path": "explanation/security/cryptographic-technology.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/cryptographic-technology.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1469,7 +1527,9 @@
       "type": "document",
       "path": "explanation/security/data-handling.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/data-handling.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1480,7 +1540,9 @@
       "type": "document",
       "path": "explanation/security/disclosure-and-reporting.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/disclosure-and-reporting.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1546,7 +1608,9 @@
       "type": "document",
       "path": "explanation/security/security-in-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "explanation",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/explanation/security/security-in-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1678,7 +1742,9 @@
       "type": "document",
       "path": "how-to-guides/api/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1689,7 +1755,9 @@
       "type": "document",
       "path": "how-to-guides/api/make-a-rest-api-request.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/make-a-rest-api-request.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1700,7 +1768,9 @@
       "type": "document",
       "path": "how-to-guides/api/use-the-legacy-api.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/use-the-legacy-api.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1711,7 +1781,9 @@
       "type": "document",
       "path": "how-to-guides/api/use-the-legacy-api-command-line-client.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/use-the-legacy-api-command-line-client.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1722,7 +1794,9 @@
       "type": "document",
       "path": "how-to-guides/api/use-the-legacy-api-via-http-requests.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/use-the-legacy-api-via-http-requests.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1733,7 +1807,9 @@
       "type": "document",
       "path": "how-to-guides/api/use-the-legacy-api-python-module.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/api/use-the-legacy-api-python-module.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1799,7 +1875,9 @@
       "type": "document",
       "path": "how-to-guides/backup-and-maintenance/back-up-restore-tear-down-charmed-deployment.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/backup-and-maintenance/back-up-restore-tear-down-charmed-deployment.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1810,7 +1888,9 @@
       "type": "document",
       "path": "how-to-guides/backup-and-maintenance/backup-and-restore.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/backup-and-maintenance/backup-and-restore.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1887,7 +1967,9 @@
       "type": "document",
       "path": "how-to-guides/backup-and-maintenance/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/backup-and-maintenance/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1898,7 +1980,9 @@
       "type": "document",
       "path": "how-to-guides/backup-and-maintenance/manage-maintenance-cron-jobs.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/backup-and-maintenance/manage-maintenance-cron-jobs.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1909,7 +1993,9 @@
       "type": "document",
       "path": "how-to-guides/backup-and-maintenance/remove-duplicate-instances.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/backup-and-maintenance/remove-duplicate-instances.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1931,7 +2017,9 @@
       "type": "document",
       "path": "how-to-guides/external-authentication/active-directory.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/external-authentication/active-directory.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1953,7 +2041,9 @@
       "type": "document",
       "path": "how-to-guides/external-authentication/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/external-authentication/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1964,7 +2054,9 @@
       "type": "document",
       "path": "how-to-guides/external-authentication/openid-connect-oidc.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/external-authentication/openid-connect-oidc.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -1986,7 +2078,9 @@
       "type": "document",
       "path": "how-to-guides/external-authentication/pluggable-authentication-modules-pam.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/external-authentication/pluggable-authentication-modules-pam.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2008,7 +2102,9 @@
       "type": "document",
       "path": "how-to-guides/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2019,7 +2115,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2030,7 +2128,9 @@
       "type": "document",
       "path": "how-to-guides/upgrade/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/upgrade/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2041,7 +2141,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-pro/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-pro/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2052,7 +2154,9 @@
       "type": "document",
       "path": "how-to-guides/repository-mirrors/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/repository-mirrors/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2063,7 +2167,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2074,7 +2180,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2085,7 +2193,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2096,7 +2206,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-installer/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-installer/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2107,7 +2219,9 @@
       "type": "document",
       "path": "how-to-guides/security/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/security/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2118,7 +2232,9 @@
       "type": "document",
       "path": "how-to-guides/troubleshooting/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/troubleshooting/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2129,7 +2245,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/configure-the-snap.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/configure-the-snap.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2140,7 +2258,10 @@
       "type": "document",
       "path": "/how-to-guides/landscape-installation-and-set-up/configure-landscape-client.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/landscape-installation-and-set-up/configure-landscape-client.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2151,7 +2272,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/create-a-core-image.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/create-a-core-image.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2261,7 +2384,10 @@
       "type": "document",
       "path": "/how-to-guides/iot-for-devices/remote-script-execution.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/iot-for-devices/remote-script-execution.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2283,7 +2409,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/install-the-snap.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/install-the-snap.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2294,7 +2422,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/remote-script-execution.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/remote-script-execution.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2305,7 +2435,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/use-annotations.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/use-annotations.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2316,7 +2448,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/secure-removal.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/secure-removal.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2327,7 +2461,9 @@
       "type": "document",
       "path": "how-to-guides/iot-for-devices/manage-snaps-with-validation-sets.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/iot-for-devices/manage-snaps-with-validation-sets.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2437,7 +2573,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/cloud-providers/get-started-ubuntu-amazon-workspaces.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/cloud-providers/get-started-ubuntu-amazon-workspaces.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2481,7 +2619,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/cloud-providers/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/cloud-providers/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2492,7 +2632,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/cloud-providers/install-on-google-cloud.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/cloud-providers/install-on-google-cloud.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2536,7 +2678,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/cloud-providers/install-on-microsoft-azure.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/cloud-providers/install-on-microsoft-azure.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2591,7 +2735,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/configure-landscape-client.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/configure-landscape-client.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2657,7 +2803,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/configure-postfix.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/configure-postfix.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2668,7 +2816,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/configure-rabbitmq.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/configure-rabbitmq.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2690,7 +2840,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/create-saas-account.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/create-saas-account.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2723,7 +2875,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/disa-stig.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/disa-stig.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2756,7 +2910,10 @@
       "type": "document",
       "path": "/assets/disa-stig/postgresql.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/postgresql.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2767,7 +2924,10 @@
       "type": "document",
       "path": "/assets/disa-stig/pg_hba.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/pg_hba.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2778,7 +2938,10 @@
       "type": "document",
       "path": "/assets/disa-stig/10-postgresql.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/10-postgresql.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2789,7 +2952,10 @@
       "type": "document",
       "path": "/assets/disa-stig/rabbitmq.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/rabbitmq.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2800,7 +2966,10 @@
       "type": "document",
       "path": "/assets/disa-stig/rabbitmq-env.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/rabbitmq-env.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2811,7 +2980,10 @@
       "type": "document",
       "path": "/assets/disa-stig/enabled_plugins.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/enabled_plugins.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2822,7 +2994,10 @@
       "type": "document",
       "path": "/assets/disa-stig/advanced.config",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/advanced.config",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2833,7 +3008,10 @@
       "type": "document",
       "path": "/assets/disa-stig/15-rabbitmq.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/15-rabbitmq.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2844,7 +3022,10 @@
       "type": "document",
       "path": "/assets/disa-stig/epmd.socket",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/epmd.socket",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2855,7 +3036,10 @@
       "type": "document",
       "path": "/assets/disa-stig/landscape.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/landscape.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2866,7 +3050,10 @@
       "type": "document",
       "path": "/assets/disa-stig/apache2.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/apache2.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2877,7 +3064,10 @@
       "type": "document",
       "path": "/assets/disa-stig/ports.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/ports.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2888,7 +3078,10 @@
       "type": "document",
       "path": "/assets/disa-stig/service.conf",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//assets/disa-stig/service.conf",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -2943,7 +3136,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/quickstart-installation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/quickstart-installation.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2954,7 +3149,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/manual-installation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/manual-installation.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2965,7 +3162,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/juju-installation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/juju-installation.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2976,7 +3175,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/juju-ha-installation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/juju-ha-installation.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2987,7 +3188,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/install-in-a-lxd-container.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/install-in-a-lxd-container.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -2998,7 +3201,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/install-on-fips-compliant-machines.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/install-on-fips-compliant-machines.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3009,7 +3214,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/install-landscape-in-an-air-gapped-or-offline-environment.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/install-landscape-in-an-air-gapped-or-offline-environment.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3020,7 +3227,9 @@
       "type": "document",
       "path": "how-to-guides/landscape-installation-and-set-up/install-landscape-client.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/landscape-installation-and-set-up/install-landscape-client.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3339,7 +3548,9 @@
       "type": "document",
       "path": "how-to-guides/repository-mirrors/create-tiered-repository-mirrors.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/repository-mirrors/create-tiered-repository-mirrors.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3471,7 +3682,9 @@
       "type": "document",
       "path": "how-to-guides/repository-mirrors/manage-repositories-in-the-web-portal.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/repository-mirrors/manage-repositories-in-the-web-portal.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3482,7 +3695,9 @@
       "type": "document",
       "path": "how-to-guides/repository-mirrors/manage-repositories-with-the-api.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/repository-mirrors/manage-repositories-with-the-api.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3493,7 +3708,9 @@
       "type": "document",
       "path": "how-to-guides/repository-mirrors/manage-repositories-in-an-air-gapped-or-offline-environment.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/repository-mirrors/manage-repositories-in-an-air-gapped-or-offline-environment.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3603,7 +3820,9 @@
       "type": "document",
       "path": "how-to-guides/security/apply-security-updates.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/security/apply-security-updates.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3625,7 +3844,10 @@
       "type": "document",
       "path": "/how-to-guides/web-portal/classic-web-portal/manage-computers.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/web-portal/classic-web-portal/manage-computers.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -3647,7 +3869,9 @@
       "type": "document",
       "path": "how-to-guides/security/harden-your-deployment.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/security/harden-your-deployment.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3658,7 +3882,10 @@
       "type": "document",
       "path": "/how-to-guides/landscape-installation-and-set-up/juju-ha-installation.md/",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/landscape-installation-and-set-up/juju-ha-installation.md/",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -3669,7 +3896,10 @@
       "type": "document",
       "path": "/how-to-guides/landscape-installation-and-set-up/manual-installation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/landscape-installation-and-set-up/manual-installation.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -3680,7 +3910,10 @@
       "type": "document",
       "path": "/how-to-guides/repository-mirrors/manage-repositories-in-the-web-portal.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/repository-mirrors/manage-repositories-in-the-web-portal.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -3724,7 +3957,9 @@
       "type": "document",
       "path": "how-to-guides/security/use-security-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/security/use-security-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3768,7 +4003,9 @@
       "type": "document",
       "path": "how-to-guides/troubleshooting/idle-activities.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/troubleshooting/idle-activities.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3801,7 +4038,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-installer/configure-landscape-deployment-for-autoinstall-provisioning.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-installer/configure-landscape-deployment-for-autoinstall-provisioning.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3834,7 +4073,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-installer/provision-a-workstation.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-installer/provision-a-workstation.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3856,7 +4097,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-installer/set-up-autoinstall-provisioning.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-installer/set-up-autoinstall-provisioning.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3900,7 +4143,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-pro/attach-ubuntu-pro.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-pro/attach-ubuntu-pro.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -3999,7 +4244,9 @@
       "type": "document",
       "path": "how-to-guides/ubuntu-pro/enable-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/ubuntu-pro/enable-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4032,7 +4279,9 @@
       "type": "document",
       "path": "how-to-guides/upgrade/upgrade-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/upgrade/upgrade-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4043,7 +4292,9 @@
       "type": "document",
       "path": "how-to-guides/upgrade/upgrade-to-24-04-lts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/upgrade/upgrade-to-24-04-lts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4142,7 +4393,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4164,7 +4417,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/manage-computers.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/manage-computers.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4175,7 +4430,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/manage-administrators-and-roles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/manage-administrators-and-roles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4186,7 +4443,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/manage-access-groups.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/manage-access-groups.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4197,7 +4456,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/manage-packages.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/manage-packages.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4208,7 +4469,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/manage-snaps.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/manage-snaps.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4219,7 +4482,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/classic-web-portal/other-tasks.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/classic-web-portal/other-tasks.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4351,7 +4616,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4373,7 +4640,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/manage-instances.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/manage-instances.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4384,7 +4653,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/manage-administrators-and-roles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/manage-administrators-and-roles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4395,7 +4666,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/manage-access-groups.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/manage-access-groups.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4406,7 +4679,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/manage-packages-and-snaps.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/manage-packages-and-snaps.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4417,7 +4692,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/manage-livepatch-and-kernel-updates.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/manage-livepatch-and-kernel-updates.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4428,7 +4705,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/use-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/use-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4439,7 +4718,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/use-remote-script-execution.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/use-remote-script-execution.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4450,7 +4731,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/use-annotations.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/use-annotations.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4461,7 +4744,9 @@
       "type": "document",
       "path": "how-to-guides/web-portal/web-portal-24-04-or-later/sanitize-instances.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/web-portal/web-portal-24-04-or-later/sanitize-instances.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4582,7 +4867,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/configure-landscape-after-upgrade.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/configure-landscape-after-upgrade.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4604,7 +4891,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/get-support.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/get-support.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4670,7 +4959,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/register-wsl-hosts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/register-wsl-hosts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4681,7 +4972,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/manage-wsl-instances.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/manage-wsl-instances.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4692,7 +4985,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/use-wsl-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/use-wsl-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4703,7 +4998,9 @@
       "type": "document",
       "path": "how-to-guides/wsl-integration/perform-common-tasks.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/how-to-guides/wsl-integration/perform-common-tasks.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4912,7 +5209,9 @@
       "type": "document",
       "path": "index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4923,7 +5222,10 @@
       "type": "document",
       "path": "self.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/self.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -4934,7 +5236,9 @@
       "type": "document",
       "path": "what-is-landscape.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/what-is-landscape.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4945,7 +5249,9 @@
       "type": "document",
       "path": "tutorial.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "tutorial",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/tutorial.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4956,7 +5262,9 @@
       "type": "document",
       "path": "reference/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4967,7 +5275,9 @@
       "type": "document",
       "path": "reference/_includes/landscape-ppas-table.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/_includes/landscape-ppas-table.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4978,7 +5288,9 @@
       "type": "document",
       "path": "reference/_includes/landscape-sizing-table.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/_includes/landscape-sizing-table.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -4989,7 +5301,9 @@
       "type": "document",
       "path": "reference/_includes/landscape-ubuntu-compatibility-table.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/_includes/landscape-ubuntu-compatibility-table.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5000,7 +5314,9 @@
       "type": "document",
       "path": "reference/_includes/landscape-versions-table.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/_includes/landscape-versions-table.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5044,7 +5360,9 @@
       "type": "document",
       "path": "reference/api/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5055,7 +5373,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5066,7 +5386,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5077,7 +5399,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/activities.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/activities.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5088,7 +5412,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/administrators.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/administrators.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5099,7 +5425,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/alerts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/alerts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5110,7 +5438,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/computers.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/computers.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5121,7 +5451,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/event-log.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/event-log.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5132,7 +5464,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/gpg.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/gpg.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5143,7 +5477,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/package-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/package-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5154,7 +5490,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/packages.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/packages.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5165,7 +5503,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/removal-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/removal-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5176,7 +5516,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/reporting.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/reporting.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5187,7 +5529,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/repositories.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/repositories.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5198,7 +5542,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/role-based-access-control.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/role-based-access-control.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5209,7 +5555,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/saved-searches.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/saved-searches.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5220,7 +5568,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/scripts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/scripts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5231,7 +5581,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/upgrade-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/upgrade-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5242,7 +5594,9 @@
       "type": "document",
       "path": "reference/api/legacy-api-endpoints/wsl.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/legacy-api-endpoints/wsl.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5264,7 +5618,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/accounts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/accounts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5286,7 +5642,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/activities.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/activities.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5297,7 +5655,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/administrators.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/administrators.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5308,7 +5668,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/alerts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/alerts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5319,7 +5681,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/beta-only.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/beta-only.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5330,7 +5694,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/child-instance-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/child-instance-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5341,7 +5707,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/computers.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/computers.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5352,7 +5720,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/credentials.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/credentials.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5363,7 +5733,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/gpg-key.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/gpg-key.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5374,7 +5746,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/invitations.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/invitations.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5385,7 +5759,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/license-management.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/license-management.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5396,7 +5772,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/livepatch.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/livepatch.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5418,7 +5796,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/login.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/login.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5429,7 +5809,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/packages.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/packages.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5440,7 +5822,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/password.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/password.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5451,7 +5835,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/person.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/person.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5462,7 +5848,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/preferences.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/preferences.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5484,7 +5872,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/processes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/processes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5495,7 +5885,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/reboot-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/reboot-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5506,7 +5898,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/repositories.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/repositories.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5517,7 +5911,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/repository-profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/repository-profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5528,7 +5924,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/script_profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/script_profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5550,7 +5948,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/scripts.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/scripts.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5561,7 +5961,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/security_profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/security_profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5594,7 +5996,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/snaps.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/snaps.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5605,7 +6009,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/switch-account.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/switch-account.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5616,7 +6022,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/tokens.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/tokens.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5627,7 +6035,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/users.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/users.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5638,7 +6048,9 @@
       "type": "document",
       "path": "reference/api/rest-api-endpoints/wsl.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/api/rest-api-endpoints/wsl.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5649,7 +6061,9 @@
       "type": "document",
       "path": "reference/config/immutable-settings.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/config/immutable-settings.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5660,7 +6074,9 @@
       "type": "document",
       "path": "reference/config/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/config/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5671,7 +6087,9 @@
       "type": "document",
       "path": "reference/config/service-conf.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/config/service-conf.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5726,7 +6144,9 @@
       "type": "document",
       "path": "reference/database.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/database.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5737,7 +6157,9 @@
       "type": "document",
       "path": "reference/release-notes/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5748,7 +6170,9 @@
       "type": "document",
       "path": "reference/networking/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/networking/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5759,7 +6183,9 @@
       "type": "document",
       "path": "reference/terms/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5770,7 +6196,9 @@
       "type": "document",
       "path": "reference/supported-versions-and-ppas.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/supported-versions-and-ppas.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5781,7 +6209,9 @@
       "type": "document",
       "path": "reference/logs.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/logs.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5792,7 +6222,9 @@
       "type": "document",
       "path": "reference/known-issues.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/known-issues.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5803,7 +6235,9 @@
       "type": "document",
       "path": "reference/lsctl.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/lsctl.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5836,7 +6270,9 @@
       "type": "document",
       "path": "reference/networking/internal-network-requirements.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/networking/internal-network-requirements.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5847,7 +6283,9 @@
       "type": "document",
       "path": "reference/networking/network-firewall.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/networking/network-firewall.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -5979,7 +6417,9 @@
       "type": "document",
       "path": "reference/release-notes/23-03-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/23-03-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6045,7 +6485,9 @@
       "type": "document",
       "path": "reference/release-notes/23-10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/23-10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6089,7 +6531,9 @@
       "type": "document",
       "path": "reference/release-notes/24-04-lts-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/24-04-lts-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6210,7 +6654,9 @@
       "type": "document",
       "path": "reference/release-notes/24-10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/24-10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6298,7 +6744,9 @@
       "type": "document",
       "path": "reference/release-notes/25.04-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/25.04-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6364,7 +6812,9 @@
       "type": "document",
       "path": "reference/release-notes/25.10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/25.10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6452,7 +6902,9 @@
       "type": "document",
       "path": "reference/release-notes/what-s-new-in-beta.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/what-s-new-in-beta.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6463,7 +6915,10 @@
       "type": "document",
       "path": "25.10-release-notes",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/25.10-release-notes",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6474,7 +6929,10 @@
       "type": "document",
       "path": "25.04-release-notes",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/25.04-release-notes",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6485,7 +6943,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/index.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/index.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6496,7 +6956,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/14-10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/14-10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6507,7 +6969,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/15-01-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/15-01-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6518,7 +6982,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/15-10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/15-10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6529,7 +6995,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/15-11-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/15-11-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6540,7 +7008,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/16-03-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/16-03-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6551,7 +7021,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/16-06-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/16-06-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6562,7 +7034,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/17-03-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/17-03-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6639,7 +7113,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/18-03-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/18-03-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6650,7 +7126,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/19-01-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/19-01-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6661,7 +7139,10 @@
       "type": "document",
       "path": "/reference/release-notes/older-release-notes/18-03-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//reference/release-notes/older-release-notes/18-03-release-notes.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6672,7 +7153,9 @@
       "type": "document",
       "path": "reference/release-notes/older-release-notes/19-10-release-notes.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/release-notes/older-release-notes/19-10-release-notes.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6793,7 +7276,9 @@
       "type": "document",
       "path": "reference/terms/access-groups.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/access-groups.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6804,7 +7289,10 @@
       "type": "document",
       "path": "/how-to-guides/web-portal/web-portal-24-04-or-later/manage-access-groups.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/web-portal/web-portal-24-04-or-later/manage-access-groups.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6815,7 +7303,10 @@
       "type": "document",
       "path": "/how-to-guides/web-portal/classic-web-portal/manage-access-groups.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "how-to",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//how-to-guides/web-portal/classic-web-portal/manage-access-groups.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6826,7 +7317,10 @@
       "type": "document",
       "path": "/reference/api/legacy-api-endpoints/computers.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs//reference/api/legacy-api-endpoints/computers.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6837,7 +7331,9 @@
       "type": "document",
       "path": "reference/terms/administrators.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/administrators.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6870,7 +7366,10 @@
       "type": "document",
       "path": "*.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/*.md",
+      "broken": "true"
     },
     "classes": "document landscape-documentation"
   },
@@ -6881,7 +7380,9 @@
       "type": "document",
       "path": "reference/terms/profiles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/profiles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6903,7 +7404,9 @@
       "type": "document",
       "path": "reference/terms/roles.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/roles.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6914,7 +7417,9 @@
       "type": "document",
       "path": "reference/terms/tags.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "reference",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reference/terms/tags.md"
     },
     "classes": "document landscape-documentation"
   },
@@ -6947,7 +7452,9 @@
       "type": "document",
       "path": "reuse/repository-disk-space.md",
       "url": null,
-      "project": "landscape-documentation"
+      "project": "landscape-documentation",
+      "diataxis": "meta",
+      "source_url": "https://github.com/canonical/landscape-documentation/blob/main/docs/reuse/repository-disk-space.md"
     },
     "classes": "document landscape-documentation"
   },

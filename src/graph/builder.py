@@ -31,10 +31,45 @@ _DEFINITION_TYPES = frozenset({'md_ref_def', 'rst_target', 'myst_label_def'})
 _EXTERNAL_SCHEMES = ('http://', 'https://', 'ftp://', 'mailto:', '//')
 
 
+_DIATAXIS_PREFIXES = {
+    'tutorial':    ('tutorial', 'tutorials'),
+    'how-to':      ('how-to', 'how-to-guides', 'howto', 'guides'),
+    'reference':   ('reference', 'references'),
+    'explanation': ('explanation', 'explanations'),
+}
+
+
+def classify_diataxis(path: str) -> str:
+    """Classify a document path into a Diataxis section.
+
+    Returns one of: tutorial, how-to, reference, explanation, meta.
+    Single-file root pages (`tutorial.md`, `index.md`, etc.) are classified
+    by their stem when possible.
+    """
+    p = (path or '').lower().lstrip('./')
+    head = p.split('/', 1)[0]
+    for section, prefixes in _DIATAXIS_PREFIXES.items():
+        if head in prefixes:
+            return section
+    # Single-file root pages: tutorial.md, how-to.md, etc.
+    stem = Path(head).stem
+    for section, prefixes in _DIATAXIS_PREFIXES.items():
+        if stem in prefixes:
+            return section
+    return 'meta'
+
+
 class GraphBuilder:
-    def __init__(self, project_root: str, project_name: Optional[str] = None) -> None:
+    def __init__(self, project_root: str, project_name: Optional[str] = None,
+                 source_base: Optional[str] = None,
+                 render_base: Optional[str] = None) -> None:
         self.project_root = Path(project_root).resolve()
         self.project_name = project_name
+        # Base URLs for "open source" / "open rendered" links from doc nodes.
+        # source_base e.g. 'https://github.com/canonical/landscape-documentation/blob/main/'
+        # render_base e.g. 'https://documentation.ubuntu.com/landscape/latest/'
+        self.source_base = source_base.rstrip('/') + '/' if source_base else None
+        self.render_base = render_base.rstrip('/') + '/' if render_base else None
         self.graph: nx.DiGraph = nx.DiGraph()
         self._nodes: dict[str, Node] = {}
         self._edges: list[Edge] = []
@@ -43,6 +78,11 @@ class GraphBuilder:
         self._label_defs: dict[str, str] = {}
         # Map from md ref-key -> target URL (from ref definitions)
         self._md_ref_defs: dict[str, str] = {}
+        # Track which docs were created from a *real* file on disk vs only as
+        # a link target whose path could not be resolved → broken doc ref.
+        self._resolved_docs: set[str] = set()
+        # Labels that were referenced; populated to detect undefined labels.
+        self._referenced_labels: set[str] = set()
 
     # ------------------------------------------------------------------
     # Node management
@@ -53,6 +93,26 @@ class GraphBuilder:
             self._nodes[node.id] = node
             self.graph.add_node(node.id, **node.to_dict())
 
+    def _doc_metadata(self, rel_path: str, *, resolved: bool) -> dict:
+        # Normalise any leading './' or '/' so URL concatenation is clean.
+        norm = rel_path.lstrip('./').lstrip('/')
+        meta = {
+            'diataxis': classify_diataxis(norm),
+            'resolved': resolved,
+        }
+        if self.source_base:
+            meta['source_url'] = self.source_base + norm
+        if self.render_base and resolved:
+            base = norm
+            for ext in ('.md', '.rst'):
+                if base.endswith(ext):
+                    base = base[: -len(ext)]
+                    break
+            if base.endswith('/index') or base == 'index':
+                base = base[: -len('index')].rstrip('/')
+            meta['render_url'] = (self.render_base + base).rstrip('/') + '/'
+        return meta
+
     def _ensure_document_node(self, filepath: str) -> str:
         """Add a document node for an existing file path and return its id."""
         try:
@@ -60,24 +120,48 @@ class GraphBuilder:
         except ValueError:
             rel = filepath
         node_id = rel
-        self._add_node(Node(
-            id=node_id,
-            node_type='document',
-            label=Path(filepath).name,
-            path=rel,
-            project=self.project_name,
-        ))
+        existing = self._nodes.get(node_id)
+        meta = self._doc_metadata(rel, resolved=True)
+        if existing is None:
+            self._add_node(Node(
+                id=node_id,
+                node_type='document',
+                label=Path(filepath).name,
+                path=rel,
+                project=self.project_name,
+                metadata=meta,
+            ))
+        else:
+            # Upgrade an existing virtual node to "resolved"
+            existing.metadata.update(meta)
+            self.graph.nodes[node_id].update(existing.to_dict())
+        self._resolved_docs.add(node_id)
         return node_id
 
-    def _ensure_virtual_document_node(self, rel_path: str) -> str:
-        """Add a (possibly unresolved) document node and return its id."""
-        self._add_node(Node(
-            id=rel_path,
-            node_type='document',
-            label=Path(rel_path).name,
-            path=rel_path,
-            project=self.project_name,
-        ))
+    def _ensure_virtual_document_node(self, rel_path: str, *, resolved: bool = True) -> str:
+        """Add a (possibly unresolved) document node and return its id.
+
+        `resolved=False` marks the node as a broken-link target — the
+        referenced path could not be found on disk.
+        """
+        meta = self._doc_metadata(rel_path, resolved=resolved)
+        existing = self._nodes.get(rel_path)
+        if existing is None:
+            self._add_node(Node(
+                id=rel_path,
+                node_type='document',
+                label=Path(rel_path).name,
+                path=rel_path,
+                project=self.project_name,
+                metadata=meta,
+            ))
+        else:
+            # Don't downgrade a resolved node to broken
+            if resolved and not existing.metadata.get('resolved', False):
+                existing.metadata.update(meta)
+                self.graph.nodes[rel_path].update(existing.to_dict())
+        if resolved:
+            self._resolved_docs.add(rel_path)
         return rel_path
 
     def _ensure_external_node(self, url: str) -> str:
@@ -97,6 +181,7 @@ class GraphBuilder:
             label=label,
             project=self.project_name,
         ))
+        self._referenced_labels.add(label)
         return node_id
 
     def _ensure_anchor_node(self, doc_id: str, anchor: str) -> str:
@@ -257,14 +342,31 @@ class GraphBuilder:
             if candidate.exists():
                 try:
                     rel = str(candidate.resolve().relative_to(self.project_root))
-                    return self._ensure_virtual_document_node(rel)
+                    return self._ensure_virtual_document_node(rel, resolved=True)
                 except ValueError:
                     pass
 
-        # Fallback: use the path as a virtual node
+        # Fallback: target is a broken / unresolved doc reference.
         if not Path(clean).suffix:
             clean = clean + '.md'
-        return self._ensure_virtual_document_node(clean)
+        return self._ensure_virtual_document_node(clean, resolved=False)
+
+    # ------------------------------------------------------------------
+    # Post-processing
+    # ------------------------------------------------------------------
+
+    def finalize(self) -> None:
+        """Mark label nodes that were referenced but never defined as broken."""
+        for node_id, node in self._nodes.items():
+            if node.node_type != 'label':
+                continue
+            label = node.label
+            if label.startswith('term:'):
+                # term references don't require an explicit definition; skip
+                continue
+            defined = label in self._label_defs
+            node.metadata['resolved'] = defined
+            self.graph.nodes[node_id]['metadata'] = node.metadata
 
     def _resolve_and_add_asset(self, target: str, source_file: str) -> str:
         source_dir = Path(source_file).resolve().parent
@@ -292,6 +394,24 @@ class GraphBuilder:
 
         isolated = list(nx.isolates(g))
 
+        # Broken references
+        broken_docs = [
+            nid for nid, n in self._nodes.items()
+            if n.node_type == 'document' and not n.metadata.get('resolved', True)
+        ]
+        broken_labels = [
+            nid for nid, n in self._nodes.items()
+            if n.node_type == 'label' and not n.metadata.get('resolved', True)
+        ]
+
+        # Diataxis composition (documents only)
+        diataxis_counts: dict[str, int] = {}
+        for n in self._nodes.values():
+            if n.node_type != 'document':
+                continue
+            sec = n.metadata.get('diataxis', 'meta')
+            diataxis_counts[sec] = diataxis_counts.get(sec, 0) + 1
+
         return {
             'total_nodes': g.number_of_nodes(),
             'total_edges': g.number_of_edges(),
@@ -300,6 +420,9 @@ class GraphBuilder:
             'isolated_nodes': isolated,
             'isolated_count': len(isolated),
             'weakly_connected_components': nx.number_weakly_connected_components(g),
+            'broken_doc_refs': broken_docs,
+            'broken_label_refs': broken_labels,
+            'diataxis_counts': diataxis_counts,
         }
 
     # ------------------------------------------------------------------

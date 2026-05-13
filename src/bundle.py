@@ -1,12 +1,23 @@
 """
 Bundle a graph JSON into a single self-contained HTML file.
 
-Inlines Cytoscape.js + fcose extension and the visualization JS so the result
-opens in a browser via file:// with no server and no network access required.
+Inlines Cytoscape.js + fcose + navigator extensions and the visualization JS so
+the result opens in a browser via file:// with no server / no network needed.
+
+The visualization JS itself contains a small data-source adapter that prefers
+`window.__DGL_DATA__` if present and falls back to the Flask `/api/*`
+endpoints otherwise. So the bundler only has to:
+
+  1. Inline the vendor scripts.
+  2. Inline `<script>window.__DGL_DATA__ = {...}</script>` before the viz.
+  3. Inline the visualization JS unchanged.
+
+This means tweaks to visualization.js cannot silently break the standalone.
 """
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -15,19 +26,22 @@ from .graph.models import Edge, Node
 
 _WEB_ROOT = Path(__file__).parent / 'web'
 _STATIC_JS = _WEB_ROOT / 'static' / 'js'
+_STATIC_CSS = _WEB_ROOT / 'static' / 'css'
 _TEMPLATE  = _WEB_ROOT / 'templates' / 'graph-view.html'
 
-# JS files inlined in order — fcose's deps must load before fcose itself.
+# Order matters: fcose's deps load before fcose itself; navigator after core.
 _INLINE_SCRIPTS = [
     'cytoscape.min.js',
     'layout-base.js',
     'cose-base.js',
     'cytoscape-fcose.js',
+    'cytoscape-navigator.js',
 ]
 
 
-def _read_static(name: str) -> str:
-    return (_STATIC_JS / name).read_text(encoding='utf-8')
+def _read_static(name: str, subdir: str = 'js') -> str:
+    path = (_STATIC_CSS if subdir == 'css' else _STATIC_JS) / name
+    return path.read_text(encoding='utf-8')
 
 
 def _compute_stats(nodes: list[dict[str, Any]],
@@ -36,12 +50,10 @@ def _compute_stats(nodes: list[dict[str, Any]],
     for n in nodes:
         t = n.get('node_type', 'unknown')
         node_types[t] = node_types.get(t, 0) + 1
-
     edge_types: dict[str, int] = {}
     for e in edges:
         t = e.get('edge_type', 'unknown')
         edge_types[t] = edge_types.get(t, 0) + 1
-
     return {
         'total_nodes': len(nodes),
         'total_edges': len(edges),
@@ -64,61 +76,49 @@ def bundle_html(graph_json_path: str, output_path: str,
     stats    = _compute_stats(nodes_raw, edges_raw)
 
     title = title or Path(graph_json_path).stem
+    html = _TEMPLATE.read_text(encoding='utf-8').replace('{{ title }}', title)
 
-    html = _TEMPLATE.read_text(encoding='utf-8')
-    viz_js = _read_static('visualization.js')
-
-    # Replace title placeholder
-    html = html.replace('{{ title }}', title)
-
-    # Replace external <script src="..."> tags with inlined contents
+    # Replace the head <script src=...> block with inlined contents.
     head_scripts = []
     for name in _INLINE_SCRIPTS:
-        content = _read_static(name)
+        try:
+            content = _read_static(name)
+        except FileNotFoundError:
+            continue
         head_scripts.append(f'<script>/* {name} */\n{content}\n</script>')
 
-    # Strip the original <script src="/static/js/..."> block (the head ones).
-    # Our template has them on consecutive lines after a comment.
-    import re
-    replacement = '\n'.join(head_scripts) + '\n'
+    # Inline navigator CSS too so the standalone has no external requests.
+    try:
+        nav_css = _read_static('cytoscape.js-navigator.css', 'css')
+        head_block = f'<style>/* navigator css */\n{nav_css}\n</style>\n'
+    except FileNotFoundError:
+        head_block = ''
+    head_block += '\n'.join(head_scripts) + '\n'
+
+    # Replace everything from the Cytoscape comment through the last script
+    # tag in the head's vendor block.
     html = re.sub(
-        r'<!-- Cytoscape\.js \+ fcose layout \(served locally\) -->\s*'
-        r'(<script src="/static/js/[^"]+"></script>\s*)+',
-        lambda _m: replacement,
+        r'<!--\s*Cytoscape\.js[^>]*-->\s*'
+        r'(?:<link[^>]+/>\s*)?'
+        r'(?:<script src="/static/js/[^"]+"></script>\s*)+',
+        lambda _m: head_block,
         html,
         count=1,
     )
 
-    # Inject the graph data + stats, and adapt visualization.js to read from
-    # those globals instead of calling /api/*.
+    # Inject data immediately before the visualization.js <script> tag so the
+    # adapter picks it up.
     payload = {'elements': elements, 'stats': stats}
-    data_block = (
-        '<script id="__graph_data__" type="application/json">'
+    inline_data = (
+        '<script>window.__DGL_DATA__ = '
         + json.dumps(payload, ensure_ascii=False)
-        + '</script>'
+        + ';</script>\n'
     )
-
-    # Replace the fetch() block with an inline data reader.
-    viz_js_patched = viz_js.replace(
-        "const [elemRes, statsRes] = await Promise.all([\n"
-        "        fetch('/api/graph'),\n"
-        "        fetch('/api/stats'),\n"
-        "      ]);\n"
-        "      if (!elemRes.ok) throw new Error(`/api/graph returned ${elemRes.status}`);\n"
-        "      elements = await elemRes.json();\n"
-        "      statsData = statsRes.ok ? await statsRes.json() : null;",
-        "const payload = JSON.parse(\n"
-        "        document.getElementById('__graph_data__').textContent\n"
-        "      );\n"
-        "      elements = payload.elements;\n"
-        "      statsData = payload.stats;"
-    )
-
-    # Replace the external visualization.js script tag with the patched contents
+    viz_js = _read_static('visualization.js')
     inline_viz = (
-        data_block
-        + '\n<script>/* visualization.js (inlined) */\n'
-        + viz_js_patched
+        inline_data
+        + '<script>/* visualization.js (inlined) */\n'
+        + viz_js
         + '\n</script>'
     )
     html = html.replace(
