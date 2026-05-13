@@ -55,6 +55,25 @@ def _pos_to_line(text: str, pos: int) -> int:
     return text[:pos].count('\n') + 1
 
 
+_HEADING_RE = re.compile(r'^(#{1,6})\s+(.+?)\s*#*\s*$', re.MULTILINE)
+
+
+def parse_markdown_headings(filepath: str) -> list[str]:
+    """Return all heading texts from a Markdown / MyST file (in document order)."""
+    text = Path(filepath).read_text(encoding='utf-8', errors='replace')
+    if text.startswith('---'):
+        end = text.find('\n---', 3)
+        if end != -1:
+            text = text[end + 4:]
+    fence_ranges = _get_code_fence_ranges(text)
+    headings: list[str] = []
+    for m in _HEADING_RE.finditer(text):
+        if _in_code_fence(m.start(), fence_ranges):
+            continue
+        headings.append(m.group(2).strip())
+    return headings
+
+
 def parse_markdown_file(filepath: str) -> list[ParsedLink]:
     path = Path(filepath)
     text = path.read_text(encoding='utf-8', errors='replace')

@@ -36,29 +36,71 @@ def cli() -> None:
 @click.option('--project-name', default=None,
               help='Tag all nodes with this project name (used in multi-project merges).')
 @click.option('--source-base', default=None,
-              help='Base URL for source files (e.g. https://github.com/canonical/'
-                   'landscape-documentation/blob/main/). Attached to each '
-                   'document node as metadata.source_url.')
+              help='Base URL for source files (overrides .docu-galaxy.toml).')
 @click.option('--render-base', default=None,
-              help='Base URL for the rendered docs site (e.g. https://'
-                   'documentation.ubuntu.com/landscape/latest/). Attached as '
-                   'metadata.render_url.')
+              help='Base URL for the rendered docs site (overrides config).')
+@click.option('--config', 'config_path', default=None,
+              type=click.Path(dir_okay=False),
+              help='Path to a docu-galaxy.toml. Auto-discovered if omitted.')
+@click.option('--no-ownership', is_flag=True, default=False,
+              help='Skip CODEOWNERS annotation even if a CODEOWNERS file is present.')
 @click.option('--verbose', '-v', is_flag=True, help='Show per-file progress.')
 def extract(project_path: str, output: str, cytoscape: str | None,
             project_name: str | None, source_base: str | None,
-            render_base: str | None, verbose: bool) -> None:
+            render_base: str | None, config_path: str | None,
+            no_ownership: bool, verbose: bool) -> None:
     """Extract all links from PROJECT_PATH and save a graph JSON.
 
     PROJECT_PATH is the root directory of a documentation project
-    (e.g. a cloned Canonical docs repository).
+    (e.g. a cloned Canonical docs repository). Configuration is loaded from
+    the nearest `.docu-galaxy.toml`; CLI flags override config values.
     """
+    from .config import load_config, load_redirects, load_sphinx_conf, merged, \
+        _normalise_redirect_key as _norm
+    from .ownership import load_codeowners
+
+    pp = Path(project_path)
+    cfg = load_config(Path(config_path).parent if config_path else pp)
+    cfg = merged(cfg, source_base=source_base, render_base=render_base)
+
+    def _resolve(p: str) -> Path:
+        path = Path(p)
+        return path if path.is_absolute() else (pp / p)
+
+    redirects: dict[str, str] = {}
+    if cfg.redirects_file:
+        redirects.update(load_redirects(_resolve(cfg.redirects_file)))
+
+    exclude = list(cfg.ignore)
+    if cfg.sphinx_conf:
+        sx = load_sphinx_conf(_resolve(cfg.sphinx_conf))
+        if isinstance(sx.get('redirects'), dict):
+            redirects.update({_norm(k): _norm(v) for k, v in sx['redirects'].items()})
+        if isinstance(sx.get('exclude_patterns'), list):
+            exclude.extend(str(p) for p in sx['exclude_patterns'])
+
+    co = None if no_ownership else load_codeowners(pp, cfg.codeowners)
+
     click.echo(f'Extracting links from: {project_path}')
+    if cfg.config_path:
+        click.echo(f'  Using config:  {cfg.config_path}')
+    if redirects:
+        click.echo(f'  Redirects:     {len(redirects)} mappings')
+    if exclude:
+        click.echo(f'  Exclude:       {len(exclude)} patterns')
+    if co:
+        click.echo(f'  Ownership:     CODEOWNERS loaded')
 
     orchestrator = ExtractorOrchestrator(
         project_path,
         project_name=project_name,
-        source_base=source_base,
-        render_base=render_base,
+        source_base=cfg.source_base,
+        render_base=cfg.render_base,
+        redirects=redirects or None,
+        exclude_patterns=exclude or None,
+        known_external_prefixes=cfg.known_external_prefixes or None,
+        diataxis_prefixes=cfg.diataxis_prefixes or None,
+        codeowners=co,
     )
     orchestrator.extract(verbose=verbose)
     orchestrator.save(output, cytoscape_path=cytoscape, verbose=verbose)
@@ -374,6 +416,57 @@ def diff(base_graph: str, head_graph: str, output: str, fmt: str,
         click.echo(f'Diff → {output}  (regressions: {regressions})')
     if fail_on_regression and regressions > 0:
         sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# check-external
+# ---------------------------------------------------------------------------
+
+@cli.command('check-external')
+@click.argument('graph_json', type=click.Path(exists=True, dir_okay=False, resolve_path=True))
+@click.option('--cache', default=None,
+              help='Cache file (default: <graph>.external-cache.json next to the graph).')
+@click.option('--timeout', default=5.0, show_default=True, type=float,
+              help='Per-request timeout in seconds.')
+@click.option('--parallelism', default=8, show_default=True, type=int,
+              help='Number of concurrent requests.')
+@click.option('--ttl-days', default=7, show_default=True, type=int,
+              help='Reuse cached results younger than this.')
+@click.option('--output', '-o', default='-', help="Output path (default '-' = stdout).")
+@click.option('--format', '-f', 'fmt', default='markdown', show_default=True,
+              type=click.Choice(['markdown', 'json', 'text']),
+              help='Output format.')
+def check_external(graph_json: str, cache: str | None, timeout: float,
+                   parallelism: int, ttl_days: int, output: str, fmt: str) -> None:
+    """Check the health of every external URL in GRAPH_JSON.
+
+    Issues HEAD (fallback GET) requests with bounded concurrency, caches
+    results, and prints a categorised report (ok / redirect / broken /
+    timeout / error).
+    """
+    from .link_check import check_graph, render_markdown, render_text, render_json
+    if cache is None:
+        cache = str(Path(graph_json).with_suffix('.external-cache.json'))
+
+    def _progress(done: int, total: int, url: str, cls: str) -> None:
+        marker = {'ok': '✓', 'redirect': '↪', 'broken': '✗',
+                  'timeout': '⏱', 'error': '!', 'skipped': '·'}.get(cls, '?')
+        click.echo(f'  [{done:>4}/{total}] {marker} {cls:<8} {url[:80]}', err=True)
+
+    click.echo(f'Checking external URLs (timeout={timeout}s, parallelism={parallelism})…',
+               err=True)
+    results = check_graph(graph_json, cache_path=cache, timeout=timeout,
+                          parallelism=parallelism, cache_ttl_days=ttl_days,
+                          progress=_progress)
+
+    renderers = {'markdown': render_markdown, 'json': render_json, 'text': render_text}
+    text = renderers[fmt](results)
+    if output == '-':
+        click.echo(text, nl=False)
+    else:
+        Path(output).parent.mkdir(parents=True, exist_ok=True)
+        Path(output).write_text(text, encoding='utf-8')
+        click.echo(f'Report → {output}', err=True)
 
 
 # ---------------------------------------------------------------------------

@@ -119,6 +119,28 @@
       margin-top: 2px;
     }
 
+    /* Findings row inside the Quality section */
+    .finding-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .finding-row:hover { border-color: var(--accent); }
+    .finding-row .count {
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .finding-row.warn .count    { color: #f0883e; }
+    .finding-row.danger .count  { color: #f85149; }
+
     /* ---- Search ---- */
     #search-input {
       width: 100%;
@@ -507,6 +529,18 @@
       <div class="stat-card"><div class="val" id="stat-edges">—</div><div class="lbl">Edges</div></div>
       <div class="stat-card"><div class="val" id="stat-docs">—</div><div class="lbl">Docs</div></div>
       <div class="stat-card"><div class="val" id="stat-ext">—</div><div class="lbl">External</div></div>
+    </div>
+  </div>
+
+  <!-- Quality metrics -->
+  <div class="sidebar-section" id="quality-section" style="display:none">
+    <h2>Quality</h2>
+    <div id="stats-grid">
+      <div class="stat-card"><div class="val" id="q-purity">—</div><div class="lbl">Diataxis purity</div></div>
+      <div class="stat-card"><div class="val" id="q-reach">—</div><div class="lbl">Reach @3</div></div>
+    </div>
+    <div id="findings-list" style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
+      <!-- populated by JS -->
     </div>
   </div>
 

@@ -32,6 +32,30 @@ def _pos_to_line(text: str, pos: int) -> int:
     return text[:pos].count('\n') + 1
 
 
+_RST_UNDERLINE = re.compile(
+    r'^([^\n]+)\n([=\-~\^\*\+_#"\'`]{3,})\s*$',
+    re.MULTILINE,
+)
+
+
+def parse_rst_headings(filepath: str) -> list[str]:
+    """Return all section-title texts from an .rst file (in document order).
+
+    Matches the classic underline style:
+        Title
+        =====
+    """
+    text = Path(filepath).read_text(encoding='utf-8', errors='replace')
+    out: list[str] = []
+    for m in _RST_UNDERLINE.finditer(text):
+        title = m.group(1).strip()
+        underline = m.group(2)
+        # Underline must be at least as long as the title.
+        if len(underline) >= max(3, len(title) - 2):
+            out.append(title)
+    return out
+
+
 def parse_rst_file(filepath: str) -> list[ParsedLink]:
     path = Path(filepath)
     text = path.read_text(encoding='utf-8', errors='replace')

@@ -551,6 +551,38 @@
       document.getElementById('stat-edges').textContent = formatNumber(statsData.total_edges);
       document.getElementById('stat-docs').textContent  = formatNumber(statsData.node_types?.document ?? 0);
       document.getElementById('stat-ext').textContent   = formatNumber(statsData.node_types?.external ?? 0);
+
+      // Quality metrics
+      const q = statsData.quality;
+      if (q) {
+        document.getElementById('quality-section').style.display = '';
+        document.getElementById('q-purity').textContent =
+          (q.diataxis_purity * 100).toFixed(0) + '%';
+        document.getElementById('q-reach').textContent =
+          (q.reachability_at_3 * 100).toFixed(0) + '%';
+
+        const findings = document.getElementById('findings-list');
+        const items = [
+          { label: 'Orphans',         count: q.orphans,           preset: 'orphans',  cls: q.orphans > 0 ? 'warn' : '' },
+          { label: 'Dead ends',       count: q.dead_ends,         preset: 'deadends', cls: q.dead_ends > 0 ? 'warn' : '' },
+          { label: 'Broken doc refs', count: q.broken_doc_refs,   preset: 'broken',   cls: q.broken_doc_refs > 0 ? 'danger' : '' },
+          { label: 'Broken anchors',  count: q.broken_anchors,    preset: 'broken',   cls: q.broken_anchors > 0 ? 'danger' : '' },
+          { label: 'Broken labels',   count: q.broken_label_refs, preset: 'broken',   cls: q.broken_label_refs > 0 ? 'danger' : '' },
+          { label: 'Diataxis crosses', count: q.diataxis_cross_edges, preset: 'all',  cls: '' },
+        ];
+        findings.innerHTML = items.map(it =>
+          `<div class="finding-row ${it.cls}" data-preset="${it.preset}">
+             <span>${escHtml(it.label)}</span>
+             <span class="count">${it.count}</span>
+           </div>`
+        ).join('');
+        findings.querySelectorAll('.finding-row[data-preset]').forEach(row => {
+          row.addEventListener('click', () => {
+            const btn = document.querySelector(`.preset-btn[data-preset="${row.dataset.preset}"]`);
+            if (btn) btn.click();
+          });
+        });
+      }
     }
     document.getElementById('graph-title').textContent =
       document.querySelector('title').textContent.replace('DocuGalaxy — ', '');

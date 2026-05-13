@@ -34,6 +34,9 @@ class GraphDiff:
     broken_label_refs_added:   list[str] = field(default_factory=list)
     broken_label_refs_removed: list[str] = field(default_factory=list)
 
+    broken_anchors_added:   list[str] = field(default_factory=list)
+    broken_anchors_removed: list[str] = field(default_factory=list)
+
     diataxis_delta: dict[str, int] = field(default_factory=dict)
     edge_delta:     int = 0
     node_delta:     int = 0
@@ -45,6 +48,7 @@ class GraphDiff:
             + len(self.dead_ends_added)
             + len(self.broken_doc_refs_added)
             + len(self.broken_label_refs_added)
+            + len(self.broken_anchors_added)
         )
 
     def has_regressions(self) -> bool:
@@ -122,6 +126,9 @@ def compute_diff(base_path: str, head_path: str) -> GraphDiff:
     base_broken_labels = _broken(base_nodes, 'label')
     head_broken_labels = _broken(head_nodes, 'label')
 
+    base_broken_anchors = _broken(base_nodes, 'anchor')
+    head_broken_anchors = _broken(head_nodes, 'anchor')
+
     # Diataxis composition delta
     def _diataxis_counts(nodes: list[dict[str, Any]]) -> dict[str, int]:
         c: dict[str, int] = defaultdict(int)
@@ -153,6 +160,8 @@ def compute_diff(base_path: str, head_path: str) -> GraphDiff:
         broken_doc_refs_removed=sorted(base_broken_docs - head_broken_docs),
         broken_label_refs_added=sorted(head_broken_labels - base_broken_labels),
         broken_label_refs_removed=sorted(base_broken_labels - head_broken_labels),
+        broken_anchors_added=sorted(head_broken_anchors - base_broken_anchors),
+        broken_anchors_removed=sorted(base_broken_anchors - head_broken_anchors),
         diataxis_delta=delta,
         edge_delta=len(head_edges) - len(base_edges),
         node_delta=len(head_nodes) - len(base_nodes),
@@ -206,6 +215,7 @@ def render_markdown(d: GraphDiff) -> str:
     _block('Dead ends', d.dead_ends_added, d.dead_ends_removed)
     _block('Broken doc references', d.broken_doc_refs_added, d.broken_doc_refs_removed)
     _block('Broken label references', d.broken_label_refs_added, d.broken_label_refs_removed)
+    _block('Broken anchors', d.broken_anchors_added, d.broken_anchors_removed)
 
     return '\n'.join(out) + '\n'
 
@@ -221,6 +231,7 @@ def render_text(d: GraphDiff) -> str:
     out.append(f'  dead-ends +{len(d.dead_ends_added)} / -{len(d.dead_ends_removed)}')
     out.append(f'  broken docs +{len(d.broken_doc_refs_added)} / -{len(d.broken_doc_refs_removed)}')
     out.append(f'  broken labels +{len(d.broken_label_refs_added)} / -{len(d.broken_label_refs_removed)}')
+    out.append(f'  broken anchors +{len(d.broken_anchors_added)} / -{len(d.broken_anchors_removed)}')
     out.append(f'  regressions: {d.regression_count()}')
     return '\n'.join(out) + '\n'
 

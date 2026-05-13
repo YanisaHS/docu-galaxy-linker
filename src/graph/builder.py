@@ -39,22 +39,29 @@ _DIATAXIS_PREFIXES = {
 }
 
 
-def classify_diataxis(path: str) -> str:
+def classify_diataxis(path: str,
+                      prefixes: Optional[dict[str, list[str]]] = None) -> str:
     """Classify a document path into a Diataxis section.
 
     Returns one of: tutorial, how-to, reference, explanation, meta.
     Single-file root pages (`tutorial.md`, `index.md`, etc.) are classified
-    by their stem when possible.
+    by their stem when possible. `prefixes` overrides the default mapping
+    (e.g. project-specific aliases).
     """
-    p = (path or '').lower().lstrip('./')
+    table: dict[str, tuple[str, ...]] = {
+        k: tuple(v) for k, v in _DIATAXIS_PREFIXES.items()
+    }
+    if prefixes:
+        for k, v in prefixes.items():
+            table[k] = tuple(v)
+    p = (path or '').lower().lstrip('./').lstrip('/')
     head = p.split('/', 1)[0]
-    for section, prefixes in _DIATAXIS_PREFIXES.items():
-        if head in prefixes:
+    for section, group in table.items():
+        if head in group:
             return section
-    # Single-file root pages: tutorial.md, how-to.md, etc.
     stem = Path(head).stem
-    for section, prefixes in _DIATAXIS_PREFIXES.items():
-        if stem in prefixes:
+    for section, group in table.items():
+        if stem in group:
             return section
     return 'meta'
 
@@ -62,14 +69,24 @@ def classify_diataxis(path: str) -> str:
 class GraphBuilder:
     def __init__(self, project_root: str, project_name: Optional[str] = None,
                  source_base: Optional[str] = None,
-                 render_base: Optional[str] = None) -> None:
+                 render_base: Optional[str] = None,
+                 redirects: Optional[dict[str, str]] = None,
+                 known_external_prefixes: Optional[list[str]] = None,
+                 diataxis_prefixes: Optional[dict[str, list[str]]] = None) -> None:
         self.project_root = Path(project_root).resolve()
         self.project_name = project_name
         # Base URLs for "open source" / "open rendered" links from doc nodes.
-        # source_base e.g. 'https://github.com/canonical/landscape-documentation/blob/main/'
-        # render_base e.g. 'https://documentation.ubuntu.com/landscape/latest/'
         self.source_base = source_base.rstrip('/') + '/' if source_base else None
         self.render_base = render_base.rstrip('/') + '/' if render_base else None
+        # Redirect map (old_path → new_path), without extensions. Applied
+        # before resolving doc refs so a redirected link doesn't appear broken.
+        self.redirects = redirects or {}
+        # Prefixes that should be treated as external rather than broken
+        # (e.g. "ubuntu/" if you cross-link into another Sphinx project).
+        self.known_external_prefixes = tuple(known_external_prefixes or ())
+        # Per-project Diataxis prefix overrides.
+        self.diataxis_prefixes = diataxis_prefixes or {}
+
         self.graph: nx.DiGraph = nx.DiGraph()
         self._nodes: dict[str, Node] = {}
         self._edges: list[Edge] = []
@@ -78,6 +95,10 @@ class GraphBuilder:
         self._label_defs: dict[str, str] = {}
         # Map from md ref-key -> target URL (from ref definitions)
         self._md_ref_defs: dict[str, str] = {}
+        # Heading IDs per document (for anchor validation).
+        self._heading_ids: dict[str, set[str]] = {}
+        # Anchor links to validate after all docs have been parsed.
+        self._pending_anchors: list[tuple[str, str, str]] = []  # (source, doc, anchor)
         # Track which docs were created from a *real* file on disk vs only as
         # a link target whose path could not be resolved → broken doc ref.
         self._resolved_docs: set[str] = set()
@@ -97,7 +118,7 @@ class GraphBuilder:
         # Normalise any leading './' or '/' so URL concatenation is clean.
         norm = rel_path.lstrip('./').lstrip('/')
         meta = {
-            'diataxis': classify_diataxis(norm),
+            'diataxis': classify_diataxis(norm, self.diataxis_prefixes),
             'resolved': resolved,
         }
         if self.source_base:
@@ -223,6 +244,15 @@ class GraphBuilder:
     # Main API
     # ------------------------------------------------------------------
 
+    def register_headings(self, source_file: str, headings: list[str]) -> None:
+        """Record slugified heading IDs for a file (used for anchor validation)."""
+        doc_id = self._ensure_document_node(source_file)
+        bucket = self._heading_ids.setdefault(doc_id, set())
+        for h in headings:
+            slug = _slugify_heading(h)
+            if slug:
+                bucket.add(slug)
+
     def add_parsed_links(self, links: list, source_file: str) -> None:
         """Ingest a list of ParsedLink objects from one source file."""
         source_id = self._ensure_document_node(source_file)
@@ -286,13 +316,17 @@ class GraphBuilder:
             if lt in ('md_inline', 'md_html_href', 'md_autolink'):
                 if raw_target.startswith('#'):
                     # Same-document anchor
-                    target_id = self._ensure_anchor_node(source_id, raw_target.lstrip('#'))
+                    anchor = raw_target.lstrip('#')
+                    target_id = self._ensure_anchor_node(source_id, anchor)
                     self._add_edge(source_id, target_id, 'anchor_link', link.link_text)
+                    self._pending_anchors.append((source_id, source_id, anchor))
                 else:
                     # May contain an anchor suffix
                     doc_part, _, anchor = raw_target.partition('#')
                     target_id = self._resolve_and_add_doc(doc_part, source_file)
                     self._add_edge(source_id, target_id, 'link', link.link_text)
+                    if anchor:
+                        self._pending_anchors.append((source_id, target_id, anchor))
                 continue
 
             # ------ images ------
@@ -328,6 +362,33 @@ class GraphBuilder:
         if not clean:
             return self._ensure_document_node(source_file)
 
+        # Apply redirects (matching either with or without extension).
+        if self.redirects:
+            from ..config import _normalise_redirect_key
+            key = _normalise_redirect_key(clean)
+            if key in self.redirects:
+                redirected = self.redirects[key]
+                # Try to find the redirected target as a real file
+                clean = redirected
+                # Re-add a default extension if needed
+                if not Path(clean).suffix:
+                    clean_with_ext = clean + '.md'
+                else:
+                    clean_with_ext = clean
+                pr = self.project_root / clean_with_ext
+                if pr.exists():
+                    try:
+                        rel = str(pr.resolve().relative_to(self.project_root))
+                        return self._ensure_virtual_document_node(rel, resolved=True)
+                    except ValueError:
+                        pass
+
+        # Known external prefixes: treat as external rather than broken.
+        # Strip any leading './' or '/' before comparing.
+        plain = clean.lstrip('./').lstrip('/')
+        if any(plain.startswith(pref) for pref in self.known_external_prefixes):
+            return self._ensure_external_node(plain)
+
         source_dir = Path(source_file).resolve().parent
 
         # Try the path as-is and with common doc extensions
@@ -356,17 +417,36 @@ class GraphBuilder:
     # ------------------------------------------------------------------
 
     def finalize(self) -> None:
-        """Mark label nodes that were referenced but never defined as broken."""
+        """Post-process: mark undefined labels and broken anchors as unresolved."""
+        # Labels referenced but never defined
         for node_id, node in self._nodes.items():
             if node.node_type != 'label':
                 continue
             label = node.label
             if label.startswith('term:'):
-                # term references don't require an explicit definition; skip
                 continue
             defined = label in self._label_defs
             node.metadata['resolved'] = defined
             self.graph.nodes[node_id]['metadata'] = node.metadata
+
+        # Anchor validation
+        for source_id, target_doc_id, anchor in self._pending_anchors:
+            slug = _slugify_heading(anchor)
+            if not slug:
+                continue
+            headings = self._heading_ids.get(target_doc_id, set())
+            anchor_node_id = f'{target_doc_id}#{anchor}'
+            node = self._nodes.get(anchor_node_id)
+            if node is None:
+                continue
+            # If we know the target doc's headings and the anchor isn't there,
+            # mark it broken. If we don't know the headings (e.g. virtual /
+            # external doc), don't penalise.
+            target_doc = self._nodes.get(target_doc_id)
+            if target_doc and target_doc.node_type == 'document' \
+               and target_doc.metadata.get('resolved', True) and headings:
+                node.metadata['resolved'] = slug in headings
+                self.graph.nodes[anchor_node_id]['metadata'] = node.metadata
 
     def _resolve_and_add_asset(self, target: str, source_file: str) -> str:
         source_dir = Path(source_file).resolve().parent
@@ -434,3 +514,23 @@ class GraphBuilder:
 
     def get_edges(self) -> list[Edge]:
         return self._edges
+
+
+# ---------------------------------------------------------------------------
+# Heading slugification (matches Sphinx / MyST conventions closely enough)
+# ---------------------------------------------------------------------------
+
+_SLUG_KEEP = re.compile(r'[^a-z0-9\- ]+')
+
+
+def _slugify_heading(text: str) -> str:
+    """Slugify a heading the way Sphinx/MyST/Jekyll usually do.
+
+    Lowercase, replace non-alphanumeric with hyphens, collapse runs of
+    hyphens. This is good enough to match links written by humans against
+    document headings in the same project.
+    """
+    s = (text or '').strip().lower()
+    s = _SLUG_KEEP.sub(' ', s)
+    s = '-'.join(s.split())
+    return s.strip('-')

@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional
 from urllib.parse import urlparse
 
 
@@ -44,8 +44,18 @@ class GraphReport:
     dead_ends: list[dict[str, Any]]             # docs with out-degree 0
     broken_doc_refs: list[dict[str, Any]]       # unresolved doc paths
     broken_label_refs: list[dict[str, Any]]     # undefined label targets
+    broken_anchors: list[dict[str, Any]]        # anchors pointing at missing headings
     diataxis_cross_edges: list[dict[str, Any]]  # cross-section edges
     external_domains: list[dict[str, Any]]      # ranked external hosts
+
+    # Quality metrics
+    diataxis_purity: float          # fraction of internal edges within section
+    reachability_at_3: float        # fraction of docs reachable from entry in <=3 hops
+    reachability_entry: Optional[str]
+
+    # Owner grouping (path → owners)
+    orphans_by_owner:   dict[str, list[str]]
+    dead_ends_by_owner: dict[str, list[str]]
 
     def to_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()
@@ -77,7 +87,8 @@ def _node_record(node: dict[str, Any], in_deg: int, out_deg: int) -> dict[str, A
     }
 
 
-def build_report(graph_json_path: str, *, limit: int = 25) -> GraphReport:
+def build_report(graph_json_path: str, *, limit: int = 25,
+                 reachability_entry: Optional[str] = None) -> GraphReport:
     with open(graph_json_path, encoding='utf-8') as f:
         data = json.load(f)
     nodes: list[dict[str, Any]] = data.get('nodes', [])
@@ -199,6 +210,76 @@ def build_report(graph_json_path: str, *, limit: int = 25) -> GraphReport:
         sec = (d.get('metadata') or {}).get('diataxis', 'meta')
         diataxis_counts[sec] += 1
 
+    # Broken anchors (anchor nodes whose target heading is missing)
+    broken_anchors = []
+    for n in nodes:
+        if n.get('node_type') != 'anchor':
+            continue
+        meta = n.get('metadata') or {}
+        if meta.get('resolved') is False:
+            referrers = sorted({e['source'] for e in edges if e['target'] == n['id']})
+            doc_id, _, anchor = n['id'].partition('#')
+            broken_anchors.append({
+                'id':        n['id'],
+                'doc':       doc_id,
+                'anchor':    anchor,
+                'referrers': referrers,
+            })
+
+    # Diataxis purity — internal edges that stay within section
+    internal_total = 0
+    internal_within = 0
+    for e in edges:
+        if e['edge_type'] not in ('doc_link', 'link', 'include'):
+            continue
+        s = nodes_by_id.get(e['source'])
+        t = nodes_by_id.get(e['target'])
+        if not s or not t:
+            continue
+        if s.get('node_type') != 'document' or t.get('node_type') != 'document':
+            continue
+        sec_s = (s.get('metadata') or {}).get('diataxis')
+        sec_t = (t.get('metadata') or {}).get('diataxis')
+        if not sec_s or not sec_t:
+            continue
+        if 'meta' in (sec_s, sec_t):
+            continue
+        internal_total += 1
+        if sec_s == sec_t:
+            internal_within += 1
+    diataxis_purity = (internal_within / internal_total) if internal_total else 1.0
+
+    # Reachability — BFS from the entry doc, count distinct docs at distance <= 3
+    if reachability_entry is None:
+        # Pick the most plausible entry: 'index.md' at the root, or the top hub.
+        candidates = ['index.md', 'index.rst', 'README.md', 'tutorial.md']
+        entry = next((c for c in candidates if any(d['id'] == c for d in docs)), None)
+        if entry is None and docs:
+            entry = top_hubs_out[0]['id'] if top_hubs_out else docs[0]['id']
+    else:
+        entry = reachability_entry
+    reachable_at_3 = _reachable(entry, edges, max_dist=3) if entry else set()
+    total_docs = max(1, len(docs))
+    reachability_at_3 = len(reachable_at_3 & {d['id'] for d in docs}) / total_docs
+
+    # Owner grouping for orphans / dead-ends
+    def _owners(rec: dict[str, Any]) -> list[str]:
+        nid = rec.get('id')
+        if not nid: return []
+        meta = (nodes_by_id.get(nid, {}).get('metadata') or {})
+        return list(meta.get('owners') or [])
+
+    orphans_by_owner: dict[str, list[str]] = defaultdict(list)
+    for o in orphans:
+        ow = _owners(o) or ['(no owner)']
+        for w in ow:
+            orphans_by_owner[w].append(o['id'])
+    dead_ends_by_owner: dict[str, list[str]] = defaultdict(list)
+    for d in dead_ends:
+        ow = _owners(d) or ['(no owner)']
+        for w in ow:
+            dead_ends_by_owner[w].append(d['id'])
+
     project = (docs[0].get('project') if docs else None) or Path(graph_json_path).stem
 
     return GraphReport(
@@ -214,9 +295,35 @@ def build_report(graph_json_path: str, *, limit: int = 25) -> GraphReport:
         dead_ends=sorted(dead_ends, key=lambda r: r['id']),
         broken_doc_refs=sorted(broken_doc_refs, key=lambda r: r['id']),
         broken_label_refs=sorted(broken_label_refs, key=lambda r: r['id']),
+        broken_anchors=sorted(broken_anchors, key=lambda r: r['id']),
         diataxis_cross_edges=diataxis_cross_edges,
         external_domains=external_domains,
+        diataxis_purity=round(diataxis_purity, 3),
+        reachability_at_3=round(reachability_at_3, 3),
+        reachability_entry=entry,
+        orphans_by_owner=dict(orphans_by_owner),
+        dead_ends_by_owner=dict(dead_ends_by_owner),
     )
+
+
+def _reachable(start: str, edges: list[dict[str, Any]], max_dist: int) -> set[str]:
+    """BFS the set of nodes reachable from `start` within `max_dist` hops."""
+    adj: dict[str, list[str]] = defaultdict(list)
+    for e in edges:
+        adj[e['source']].append(e['target'])
+    seen = {start}
+    frontier = [start]
+    for _ in range(max_dist):
+        nxt: list[str] = []
+        for u in frontier:
+            for v in adj.get(u, []):
+                if v not in seen:
+                    seen.add(v)
+                    nxt.append(v)
+        if not nxt:
+            break
+        frontier = nxt
+    return seen
 
 
 def _count_field(items: Iterable[dict[str, Any]], key: str) -> dict[str, int]:
@@ -280,6 +387,19 @@ def render_markdown(r: GraphReport, *, limit: int = 15) -> str:
         out.append('')
         out.append(f'**Diataxis composition:** {parts}')
 
+    # Quality metrics
+    out.append('')
+    out.append('| Metric | Value |')
+    out.append('|---|---|')
+    out.append(f'| Diataxis purity | {r.diataxis_purity:.0%} |')
+    entry = f' from `{r.reachability_entry}`' if r.reachability_entry else ''
+    out.append(f'| Reachability @ 3 hops{entry} | {r.reachability_at_3:.0%} |')
+    out.append(f'| Orphans | {len(r.orphans)} |')
+    out.append(f'| Dead ends | {len(r.dead_ends)} |')
+    out.append(f'| Broken doc refs | {len(r.broken_doc_refs)} |')
+    out.append(f'| Broken label refs | {len(r.broken_label_refs)} |')
+    out.append(f'| Broken anchors | {len(r.broken_anchors)} |')
+
     _table(out, 'Top hubs (most outgoing links)', r.top_hubs,
            ['Page', 'Section', 'Out', 'In'],
            lambda rec: f'| {_doc_link(rec)} | {rec.get("diataxis") or "—"} | '
@@ -309,6 +429,24 @@ def render_markdown(r: GraphReport, *, limit: int = 15) -> str:
            lambda rec: f'| `{rec.get("label") or rec["id"]}` | '
                        f'{", ".join(f"`{x}`" for x in rec.get("referrers", [])[:5]) or "—"} |',
            limit)
+
+    _table(out, 'Broken anchor references',
+           r.broken_anchors,
+           ['Target', 'Referenced by'],
+           lambda rec: f'| `{rec["doc"]}#{rec["anchor"]}` | '
+                       f'{", ".join(f"`{x}`" for x in rec.get("referrers", [])[:5]) or "—"} |',
+           limit)
+
+    # Owner grouping
+    if r.orphans_by_owner and any(o != '(no owner)' for o in r.orphans_by_owner):
+        out.append('')
+        out.append('## Orphans by owner')
+        out.append('')
+        out.append('| Owner | Count |')
+        out.append('|---|---|')
+        for owner, ids in sorted(r.orphans_by_owner.items(),
+                                  key=lambda kv: -len(kv[1])):
+            out.append(f'| `{owner}` | {len(ids)} |')
 
     if r.diataxis_cross_edges:
         pair_counts: dict[str, int] = defaultdict(int)
@@ -347,10 +485,14 @@ def render_text(r: GraphReport) -> str:
     out.append(f'{r.project}: {r.total_nodes} nodes, {r.total_edges} edges')
     if r.diataxis_counts:
         out.append('  Diataxis: ' + ', '.join(f'{k}={v}' for k, v in sorted(r.diataxis_counts.items())))
+    out.append(f'  Diataxis purity:   {r.diataxis_purity:.0%}')
+    if r.reachability_entry:
+        out.append(f'  Reachability @3:   {r.reachability_at_3:.0%}  (from {r.reachability_entry})')
     out.append(f'  Orphans:           {len(r.orphans)}')
     out.append(f'  Dead ends:         {len(r.dead_ends)}')
     out.append(f'  Broken doc refs:   {len(r.broken_doc_refs)}')
     out.append(f'  Broken label refs: {len(r.broken_label_refs)}')
+    out.append(f'  Broken anchors:    {len(r.broken_anchors)}')
     out.append(f'  Diataxis crosses:  {len(r.diataxis_cross_edges)}')
     return '\n'.join(out) + '\n'
 
