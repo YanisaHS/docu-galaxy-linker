@@ -84,18 +84,27 @@ def create_concept_app(graph_data: dict[str, Any]) -> Flask:
 
         elements = []
         for n in nodes:
+            meta = n.get('metadata', {})
+            is_split = meta.get('split_candidate', False)
             elements.append({
                 'data': {
                     'id': n['id'],
                     'label': n.get('label', n['id']),
                     'type': n.get('node_type', 'other'),
-                    'section': n.get('metadata', {}).get('section', ''),
-                    'word_count': n.get('metadata', {}).get('word_count', 0),
-                    'headings': n.get('metadata', {}).get('headings', []),
+                    'section': meta.get('section', ''),
+                    'word_count': meta.get('word_count', 0),
+                    'headings': meta.get('headings', []),
                     'path': n.get('path', ''),
                     'project': n.get('project', ''),
+                    'split_candidate': is_split,
+                    'split_score': meta.get('split_score', 0),
+                    'num_sections': meta.get('num_sections', 0),
+                    'split_sections': meta.get('split_sections', []),
                 },
-                'classes': n.get('node_type', 'other'),
+                'classes': ' '.join(filter(None, [
+                    n.get('node_type', 'other'),
+                    'split-candidate' if is_split else '',
+                ])),
             })
         for e in edges:
             elements.append({

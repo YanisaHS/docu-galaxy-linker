@@ -125,6 +125,18 @@
         selector: 'edge:selected',
         style: { width: 3, opacity: 1 },
       },
+      {
+        selector: 'node.split-candidate',
+        style: {
+          'border-width': 3,
+          'border-color': '#f8b500',
+          'border-style': 'dashed',
+        },
+      },
+      {
+        selector: 'node.split-candidate.dimmed',
+        style: { opacity: 0.12 },
+      },
       ...nodeTypeRules,
     ];
   }
@@ -315,9 +327,28 @@
 
     hideLoading();
 
+    // Count split candidates
+    const splitNodes = cy.nodes('.split-candidate');
+    document.getElementById('stat-splits').textContent = splitNodes.length;
+
     // Count duplicate edges (shingle-Jaccard detected)
     const dupEdgesAll = cy.edges('[type = "duplicate"]');
     document.getElementById('stat-dups').textContent = dupEdgesAll.length;
+
+    // ---- Split candidate highlight controls ----
+    document.getElementById('btn-highlight-splits').addEventListener('click', () => {
+      document.getElementById('btn-highlight-splits').style.display = 'none';
+      document.getElementById('btn-clear-splits').style.display = '';
+      cy.elements().addClass('dimmed');
+      splitNodes.removeClass('dimmed');
+    });
+    document.getElementById('btn-clear-splits').addEventListener('click', () => {
+      document.getElementById('btn-highlight-splits').style.display = '';
+      document.getElementById('btn-clear-splits').style.display = 'none';
+      cy.elements().removeClass('dimmed highlighted');
+      searchInput.value = '';
+      searchInfo.textContent = '';
+    });
 
     // ---- Layout controls ----
     document.getElementById('btn-run-layout').addEventListener('click', () => runLayout(cy, true));
@@ -391,16 +422,41 @@
                     background:${sectionColor}22;border:1px solid ${sectionColor};
                     color:${sectionColor};font-size:11px;margin-bottom:8px;">${esc(d.section)}</span>`;
 
+      const splitBadge = d.split_candidate
+        ? `<div style="display:inline-block;padding:2px 10px;border-radius:10px;
+            background:#f8b50022;border:1px dashed #f8b500;color:#f8b500;
+            font-size:11px;margin-bottom:8px;">✂ Consider splitting</div>`
+        : '';
+
       const rows = [
         ['words', (d.word_count || 0).toLocaleString()],
+        ['sections', d.num_sections || 0],
         ['in-links', node.indegree()],
         ['out-links', node.outdegree()],
         ['path', d.path],
       ];
+      if (d.split_candidate) {
+        rows.splice(2, 0, ['divergence', Math.round(d.split_score * 100) + '%']);
+      }
 
-      infoBody.innerHTML = chip + rows.map(([k, v]) =>
+      infoBody.innerHTML = chip + splitBadge + rows.map(([k, v]) =>
         `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${esc(String(v))}</span></div>`
       ).join('');
+      if (d.split_candidate) {
+        infoBody.innerHTML += `<div style="margin-top:8px;font-size:11px;color:var(--muted)">` +
+          `This page's sections have low vocabulary overlap — they may cover distinct topics that could each stand alone as a separate page.</div>`;
+
+        const sections = d.split_sections || [];
+        if (sections.length) {
+          infoBody.innerHTML +=
+            `<div style="margin-top:10px;font-size:11px;color:#f8b500;font-weight:600">Sections detected as divergent:</div>` +
+            `<ol style="margin:6px 0 0 16px;padding:0;font-size:11px;color:var(--text);line-height:1.8">` +
+            sections.map(s => `<li>${esc(s)}</li>`).join('') +
+            `</ol>` +
+            `<div style="margin-top:8px;font-size:11px;color:var(--muted)">` +
+            `Each item above could potentially become its own page. Consider whether a reader looking for any one of these topics would benefit from a dedicated page with its own title, introduction, and cross-references.</div>`;
+        }
+      }
 
       // Headings
       const headings = d.headings || [];

@@ -307,6 +307,19 @@
   </div>
 
   <div class="sidebar-section">
+    <h2>Split candidates</h2>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Pages whose sections cover divergent topics (dashed amber border).</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span id="stat-splits" style="font-size:22px;font-weight:700;color:#f8b500">—</span>
+      <span style="font-size:11px;color:var(--muted)">pages found</span>
+    </div>
+    <div class="btn-row">
+      <button id="btn-highlight-splits">Highlight</button>
+      <button id="btn-clear-splits" style="display:none">Clear</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
     <h2>Potential duplicates</h2>
     <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Pages with high phrase-level text overlap (word trigram Jaccard &ge;0.30).</p>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">

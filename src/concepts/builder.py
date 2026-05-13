@@ -125,6 +125,29 @@ def _jaccard_sim(sa: frozenset, sb: frozenset) -> float:
     return intersection / len(sa | sb)
 
 
+def _section_divergence(section_terms: list[dict[str, int]]) -> float:
+    """
+    Return the average pairwise Jaccard *dissimilarity* (1 - Jaccard) between
+    all pairs of H2 section term sets.  A score close to 1.0 means sections
+    share almost no vocabulary → likely covering different topics.
+    Returns 0.0 if fewer than 2 sections.
+    """
+    if len(section_terms) < 2:
+        return 0.0
+    sets = [frozenset(s.keys()) for s in section_terms]
+    total, count = 0.0, 0
+    for i in range(len(sets)):
+        for j in range(i + 1, len(sets)):
+            sa, sb = sets[i], sets[j]
+            union = len(sa | sb)
+            if union == 0:
+                continue
+            sim = len(sa & sb) / union
+            total += 1.0 - sim
+            count += 1
+    return total / count if count else 0.0
+
+
 # ---------------------------------------------------------------------------
 # Cross-reference helpers
 # ---------------------------------------------------------------------------
@@ -218,10 +241,30 @@ def build_concept_graph(
     tfidf = _compute_tfidf(pages)
 
     # ------------------------------------------------------------------
+    # Pre-compute section divergence scores
+    # ------------------------------------------------------------------
+    # A page is a split candidate when it has ≥3 substantive H2 sections,
+    # ≥600 words, and the sections share little vocabulary (avg pairwise
+    # Jaccard dissimilarity ≥ 0.72).
+    _SPLIT_MIN_SECTIONS = 4
+    _SPLIT_MIN_WORDS    = 1000
+    _SPLIT_DIV_THRESHOLD = 0.90
+
+    divergence: dict[str, float] = {}
+    for page in pages:
+        if (page.word_count >= _SPLIT_MIN_WORDS
+                and len(page.section_terms) >= _SPLIT_MIN_SECTIONS):
+            divergence[page.id] = _section_divergence(page.section_terms)
+        else:
+            divergence[page.id] = 0.0
+
+    # ------------------------------------------------------------------
     # Nodes
     # ------------------------------------------------------------------
     nodes: list[dict[str, Any]] = []
     for page in pages:
+        div = divergence[page.id]
+        is_split = div >= _SPLIT_DIV_THRESHOLD
         nodes.append({
             'id': page.id,
             'node_type': page.section_key,
@@ -233,6 +276,10 @@ def build_concept_graph(
                 'section': page.section,
                 'word_count': page.word_count,
                 'headings': page.headings[:12],
+                'split_score': round(div, 3),
+                'split_candidate': is_split,
+                'num_sections': len(page.section_terms),
+                'split_sections': page.section_titles if is_split else [],
             },
         })
 

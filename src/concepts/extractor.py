@@ -101,6 +101,8 @@ class DocPage:
     terms: dict[str, int] = field(default_factory=dict)  # term -> count in doc
     word_count: int = 0
     shingles: frozenset = field(default_factory=frozenset)  # word trigrams for duplicate detection
+    section_terms: list[dict[str, int]] = field(default_factory=list)  # per-H2-section term counts
+    section_titles: list[str] = field(default_factory=list)  # H2 headings that define each section
 
 
 # ---------------------------------------------------------------------------
@@ -113,6 +115,32 @@ def _classify_section(rel_path: str) -> tuple[str, str]:
         if p == prefix or p.startswith(prefix + '/') or p.startswith(prefix + '.'):
             return label, key
     return _DIATAXIS_DEFAULT
+
+
+def _split_sections(raw_text: str) -> tuple[list[dict[str, int]], list[str]]:
+    """
+    Split page at H2 (##) boundaries and return
+    (section_terms, section_titles) where both lists are parallel.
+    Sections with fewer than 30 words are ignored.
+    """
+    text = _RE_YAML_FRONT.sub('', raw_text)
+    # Find all H2 headings and their positions
+    h2_re = re.compile(r'(?m)^## (.+)$')
+    boundaries = [(m.start(), m.group(1).strip()) for m in h2_re.finditer(text)]
+
+    # Build (title, body) pairs
+    segments: list[tuple[str, str]] = []
+    for idx, (pos, heading) in enumerate(boundaries):
+        # Body = text from end of this heading line to start of the next
+        body_start = text.index('\n', pos) + 1 if '\n' in text[pos:] else pos
+        body_end = boundaries[idx + 1][0] if idx + 1 < len(boundaries) else len(text)
+        body = text[body_start:body_end]
+        if len(body.split()) >= 30:
+            segments.append((heading, body))
+
+    terms  = [_extract_terms(body) for _, body in segments]
+    titles = [heading for heading, _ in segments]
+    return terms, titles
 
 
 def _extract_shingles(raw_text: str, n: int = 3) -> frozenset:
@@ -217,6 +245,7 @@ def extract_doc_pages(docs_dir: str) -> list[DocPage]:
         title = _strip_diataxis_prefix(title)
         terms = _extract_terms(text)
         shingles = _extract_shingles(text)
+        section_terms, section_titles = _split_sections(text)
         word_count = len(text.split())
         section, section_key = _classify_section(rel)
 
@@ -230,6 +259,8 @@ def extract_doc_pages(docs_dir: str) -> list[DocPage]:
             terms=terms,
             word_count=word_count,
             shingles=shingles,
+            section_terms=section_terms,
+            section_titles=section_titles,
         ))
 
     return pages
