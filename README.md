@@ -1,5 +1,7 @@
 # docu-galaxy-linker
 
+> NOTE: This is a test project! Just exploring :)
+
 Map every link in a Canonical documentation project, find orphan / dead-end /
 broken pages, and visualise the structure interactively. Designed to be a
 **workflow tool** — surface findings as Markdown for PR comments, CSV for
@@ -9,7 +11,23 @@ Built and tested against [`canonical/landscape-documentation`](
 https://github.com/canonical/landscape-documentation), but works against any
 Markdown / MyST / reStructuredText docs project.
 
+📖 **Full documentation lives in [`docs/`](docs/index.md)** — tutorial, CLI
+reference, findings glossary, and the model behind the metrics.
+
 ---
+
+## Findings glossary — what the tool reports
+
+| Finding | Severity | What it means |
+|---|---|---|
+| **Broken doc refs** | 🔴 | A link points at a file path that doesn't exist on disk. Reader gets a 404, build may fail. Usually a missed rename. |
+| **Broken anchors** | 🔴 | A link to a heading (`page.md#section-name`) where that heading no longer exists on the target page. |
+| **Broken labels** | 🔴 | A `{ref}` / `:ref:` cross-reference using a label that was never `(label-name)=`-defined. Sphinx renders the literal text. |
+| **Orphans** | 🟠 | A document with **zero incoming internal links**. Only reachable via direct URL or search. Often a forgotten page or missing nav entry. |
+| **Dead ends** | 🟠 | A document with **zero outgoing internal links**. Once a reader lands, there's no "see also" / next step — bad for journeys and discoverability. |
+| **Diataxis crosses** | ⚪ | Internal links jumping between Diataxis sections (e.g. `tutorial → reference`). Some is healthy; high counts may signal a tutorial drifting into reference territory. |
+| **Diataxis purity** | 🟢 | % of cross-document internal links that stay *within* their Diataxis section (excluding meta). Higher = each section is internally coherent. |
+| **Reach @ 3** | 🟢 | From the entry page (usually `index.md`), the % of docs reachable in ≤3 link hops. Approximates "how much of your docs can a reader discover from the front door?" |
 
 ## What it produces
 

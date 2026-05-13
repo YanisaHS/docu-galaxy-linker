@@ -15,321 +15,759 @@
 
   <style>
     :root {
-      --bg: #0e1117;
-      --surface: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #58a6ff;
-      --danger: #f85149;
+      --bg:        #0b0e14;
+      --bg-2:      #0f131b;
+      --surface:   #161b22;
+      --surface-2: #1b2230;
+      --border:    #2a3140;
+      --text:      #e6edf3;
+      --muted:     #8b95a7;
+      --muted-2:   #6e7787;
+      --accent:    #58a6ff;
+      --accent-2:  #79c0ff;
+      --warn:      #f0883e;
+      --danger:    #f85149;
+      --good:      #56d364;
 
-      /* Diataxis colours */
+      /* Diataxis section colours */
       --c-tutorial:    #f0883e;
       --c-how-to:      #7ee787;
       --c-reference:   #79c0ff;
       --c-explanation: #bc8cff;
       --c-meta:        #8b949e;
 
-      /* Node colours */
       --c-document: #58a6ff;
       --c-external: #f0883e;
       --c-label:    #bc8cff;
       --c-anchor:   #7ee787;
       --c-asset:    #8b949e;
 
-      /* Edge colours */
-      --e-doc-link:      #58a6ff;
-      --e-external-link: #f0883e;
-      --e-link:          #79c0ff;
-      --e-ref-link:      #bc8cff;
-      --e-include:       #ffa657;
-      --e-anchor-link:   #7ee787;
-      --e-image:         #56d364;
-      --e-term-link:     #d2a8ff;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow:    0 4px 16px rgba(0,0,0,0.35);
+      --shadow-lg: 0 18px 48px rgba(0,0,0,0.55);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    html, body { height: 100%; overflow: hidden; }
     body {
       display: flex;
-      height: 100vh;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI",
+                   Helvetica, Arial, sans-serif;
       font-size: 13px;
-      overflow: hidden;
+      font-feature-settings: "cv11", "ss03";
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ---- Sidebar ---- */
+    /* ====================================================================
+       Sidebar
+       ==================================================================== */
     #sidebar {
-      width: 260px;
-      min-width: 200px;
-      background: var(--surface);
+      width: 248px;
+      min-width: 220px;
+      max-width: 280px;
+      background: var(--bg-2);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      padding: 16px 12px;
-      gap: 16px;
+      padding: 14px 12px 18px;
+      gap: 14px;
       z-index: 10;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
     }
+    #sidebar::-webkit-scrollbar { width: 6px; }
+    #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    #sidebar h1 {
-      font-size: 16px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% 30%, var(--accent-2), #1f6feb 70%);
+      box-shadow: var(--shadow-sm), inset 0 0 16px rgba(255,255,255,0.06);
+    }
+    .brand-text h1 {
+      font-size: 15px;
       font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.2px;
+      color: var(--text);
+    }
+    .brand-text span {
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+      margin-top: 1px;
     }
 
-    #sidebar h2 {
-      font-size: 11px;
+    .sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-section h2 {
+      font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--muted);
-      margin-bottom: 6px;
+      letter-spacing: 1.2px;
+      color: var(--muted-2);
     }
-
-    .sidebar-section { display: flex; flex-direction: column; gap: 4px; }
-
-    /* ---- Stats ---- */
-    #stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-
-    .stat-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      text-align: center;
-    }
-
-    .stat-card .val {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .stat-card .lbl {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    /* Findings row inside the Quality section */
-    .finding-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 8px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .finding-row:hover { border-color: var(--accent); }
-    .finding-row .count {
-      font-weight: 700;
-      color: var(--accent);
-      font-variant-numeric: tabular-nums;
-    }
-    .finding-row.warn .count    { color: #f0883e; }
-    .finding-row.danger .count  { color: #f85149; }
 
     /* ---- Search ---- */
     #search-input {
       width: 100%;
-      padding: 6px 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-size: 13px;
-      outline: none;
-    }
-
-    #search-input:focus { border-color: var(--accent); }
-
-    #search-info { font-size: 11px; color: var(--muted); min-height: 16px; }
-
-    /* ---- Layout & controls ---- */
-    select, button {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      padding: 5px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    select:focus, button:focus { outline: 2px solid var(--accent); }
-    button:hover { background: var(--border); }
-
-    .btn-row { display: flex; gap: 6px; }
-    .btn-row button { flex: 1; }
-
-    /* ---- Preset buttons ---- */
-    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-    .preset-btn {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      padding: 6px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .preset-btn:hover { background: var(--border); }
-    .preset-btn.active {
-      background: var(--accent);
-      color: #0e1117;
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 2px 0;
-      cursor: pointer;
-    }
-    label input { cursor: pointer; }
-
-    /* ---- Legend ---- */
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 2px 0;
-    }
-
-    .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .legend-line {
-      width: 18px;
-      height: 2px;
-      flex-shrink: 0;
-      border-radius: 1px;
-    }
-
-    /* ---- Info panel ---- */
-    #info-panel {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      width: 300px;
+      padding: 8px 12px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 14px;
-      z-index: 20;
-      display: none;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-
-    #info-panel.visible { display: block; }
-
-    #info-panel h3 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 8px;
-      word-break: break-all;
-    }
-
-    .info-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 4px;
-      font-size: 12px;
-    }
-
-    .info-key { color: var(--muted); min-width: 72px; }
-    .info-val { word-break: break-all; }
-
-    #info-panel #info-close {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 16px;
-      cursor: pointer;
-      width: auto;
-      padding: 0;
-    }
-
-    #info-neighbours { margin-top: 10px; }
-    #info-neighbours h4 { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    #info-neighbours ul { list-style: none; padding: 0; }
-    #info-neighbours li {
-      font-size: 11px;
-      padding: 2px 0;
       color: var(--text);
-      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 120ms ease, background 120ms ease;
     }
-    #info-neighbours li:hover { color: var(--accent); }
+    #search-input::placeholder { color: var(--muted-2); }
+    #search-input:focus {
+      border-color: var(--accent);
+      background: var(--surface-2);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    #search-info { font-size: 11px; color: var(--muted); min-height: 14px; }
 
-    /* ---- View tabs ---- */
+    /* ---- Findings (the priority list) ---- */
+    .findings { display: flex; flex-direction: column; gap: 4px; }
+    .finding {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 10px;
+      row-gap: 2px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, transform 100ms ease;
+    }
+    .finding:hover {
+      background: var(--surface-2);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .finding .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--muted);
+      margin-top: 5px;
+      grid-row: 1;
+    }
+    .finding.warn .dot   { background: var(--warn);   box-shadow: 0 0 8px rgba(240, 136, 62, 0.5); }
+    .finding.danger .dot { background: var(--danger); box-shadow: 0 0 8px rgba(248, 81, 73, 0.55); }
+    .finding.good .dot   { background: var(--good);   box-shadow: 0 0 8px rgba(86, 211, 100, 0.45); }
+    .finding .label {
+      font-size: 12px;
+      font-weight: 500;
+      grid-row: 1;
+    }
+    .finding .desc {
+      grid-column: 2 / 3;
+      grid-row: 2;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+    .finding .count {
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      background: var(--bg);
+      padding: 1px 8px;
+      border-radius: 999px;
+      min-width: 32px;
+      text-align: center;
+      grid-row: 1;
+      grid-column: 3;
+      align-self: center;
+    }
+    .finding.warn .count   { color: var(--warn);   background: rgba(240,136,62,0.08); }
+    .finding.danger .count { color: var(--danger); background: rgba(248,81,73,0.09); }
+    .finding.active {
+      border-color: var(--accent);
+      background: var(--surface-2);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    /* Small info button next to the Findings section header */
+    .section-with-info { display: flex; align-items: center; gap: 6px; }
+    .info-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      padding: 0;
+      font-size: 10px;
+      line-height: 1;
+      font-family: ui-monospace, monospace;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 120ms ease;
+    }
+    .info-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ---- Views (presets) ---- */
+    .views { display: flex; flex-direction: column; gap: 3px; }
+    .view-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text);
+      transition: background 120ms ease;
+    }
+    .view-row:hover { background: var(--surface); }
+    .view-row.active {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .view-row .kbd {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 10px;
+      color: var(--muted-2);
+      padding: 1px 5px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+
+    /* ---- Display controls ---- */
+    select, .btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+      font: inherit;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+    select:hover, .btn:hover { background: var(--surface-2); border-color: var(--accent); }
+    select:focus { outline: 2px solid var(--accent); }
+    .btn-row { display: flex; gap: 6px; }
+    .btn-row .btn { flex: 1; }
+
+    details.foldable summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted-2);
+      padding-bottom: 6px;
+      user-select: none;
+    }
+    details.foldable summary::-webkit-details-marker { display: none; }
+    details.foldable summary::before {
+      content: '▸ ';
+      color: var(--muted-2);
+      transition: transform 150ms ease;
+      display: inline-block;
+    }
+    details.foldable[open] summary::before { content: '▾ '; }
+
+    .edge-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 0;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .edge-toggle-row input { cursor: pointer; accent-color: var(--accent); }
+
+    /* ---- Legend (compact) ---- */
+    .legend-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 2px 0; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .legend-note {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+      margin-top: 4px;
+    }
+
+    /* ====================================================================
+       Canvas area
+       ==================================================================== */
     #canvas-area {
       flex: 1;
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
+      background: var(--bg);
     }
 
-    #view-tabs {
+    /* `#stage` is the area below the metrics bar that hosts the canvas,
+       info panel, hint, minimap, and toast. All children are absolutely
+       positioned inside it (including `#cy` itself), so its size is set
+       by the parent flex and the canvas can never collapse to 0 height
+       even if some flex property gets dropped during edits. */
+    #stage {
+      flex: 1 1 auto;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ---- Top metrics bar ---- */
+    #metrics-bar {
       display: flex;
-      gap: 0;
-      background: var(--surface);
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg-2);
       border-bottom: 1px solid var(--border);
-      padding: 0 16px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    #metrics-bar::-webkit-scrollbar { height: 4px; }
+    #metrics-bar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .metric {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 3px 9px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: border-color 120ms ease, background 120ms ease;
+      white-space: nowrap;
+    }
+    .metric.clickable { cursor: pointer; }
+    .metric.clickable:hover {
+      border-color: var(--border);
+      background: var(--surface);
+    }
+    .metric .val {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .metric .lbl {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      white-space: nowrap;
+    }
+    .metric.warn .val   { color: var(--warn); }
+    .metric.danger .val { color: var(--danger); }
+    .metric.good .val   { color: var(--good); }
+
+    .metric-spacer { flex: 1 1 0; min-width: 0; }
+
+    .view-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 2px;
+      align-self: center;
       flex-shrink: 0;
     }
-
     .view-tab {
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
-      border-radius: 0;
+      border-radius: 5px;
       color: var(--muted);
-      padding: 10px 18px;
+      padding: 4px 11px;
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 120ms ease;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      background: var(--bg-2);
+      color: var(--accent);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ---- Canvas ---- */
+    #cy {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 50%, rgba(88, 166, 255, 0.04), transparent 70%),
+        var(--bg);
+    }
+
+    /* ---- First-time hint ---- */
+    #hint {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      box-shadow: var(--shadow), 0 0 0 4px rgba(88, 166, 255, 0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 12px;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    #hint.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    #hint kbd {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    #hint .close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 0 0 4px;
+      line-height: 1;
+      width: auto;
+    }
+    #hint .close:hover { color: var(--text); }
+
+    /* ---- Info panel — slide-in from right ---- */
+    #info-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      bottom: 14px;
+      width: 360px;
+      max-width: calc(100% - 28px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transform: translateX(calc(100% + 32px));
+      transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    #info-panel.visible { transform: translateX(0); }
+
+    /* Chips row inside the info panel — flex with wrap so multiple chips
+       breathe correctly. */
+    #info-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    #info-header { display: flex; align-items: flex-start; gap: 8px; }
+    #info-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+      line-height: 1.35;
+    }
+    #info-close {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      cursor: pointer;
       font-size: 13px;
+      padding: 0;
+      flex-shrink: 0;
+      transition: all 120ms ease;
+    }
+    #info-close:hover { color: var(--text); border-color: var(--accent); }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      gap: 8px;
+      font-size: 12px;
+      padding: 3px 0;
+    }
+    .info-row .k { color: var(--muted); }
+    .info-row .v { color: var(--text); word-break: break-all; }
+    .info-row .v a { color: var(--accent); text-decoration: none; }
+    .info-row .v a:hover { text-decoration: underline; }
+
+    .info-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .info-actions a, .info-actions button {
+      flex: 1 1 auto;
+      text-decoration: none;
+      text-align: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--accent);
+      padding: 7px 10px;
+      font-size: 11px;
       font-weight: 500;
       cursor: pointer;
+      transition: all 120ms ease;
+    }
+    .info-actions a:hover, .info-actions button:hover {
+      background: var(--surface-2);
+      border-color: var(--accent);
+    }
+    .info-actions .primary {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .info-actions .primary:hover { background: var(--accent-2); }
+
+    .info-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 0;
       width: auto;
-      transition: color 0.15s, border-color 0.15s;
+      transition: color 120ms ease, border-color 120ms ease;
     }
+    .info-tab:hover { color: var(--text); }
+    .info-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    .view-tab:hover { color: var(--text); background: none; }
-
-    .view-tab.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
+    #info-list { flex: 1; overflow-y: auto; min-height: 0; }
+    #info-list::-webkit-scrollbar { width: 6px; }
+    #info-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    #info-list ul { list-style: none; padding: 0; margin-top: 4px; }
+    #info-list li {
+      font-size: 11px;
+      padding: 5px 8px;
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 120ms ease;
+      line-height: 1.4;
     }
+    #info-list li:hover { background: var(--surface-2); color: var(--accent); }
+    #info-list .empty { color: var(--muted-2); font-size: 11px; padding-top: 8px; text-align: center; }
 
-    /* ---- Main canvas ---- */
-    #cy {
-      flex: 1;
+    /* ---- Toast ---- */
+    #toast {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 18px;
+      color: var(--text);
+      z-index: 200;
+      font-size: 12px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+    #toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---- Help overlay ---- */
+    #help-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      backdrop-filter: blur(4px);
+    }
+    #help-overlay.visible { display: flex; }
+    #help-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      width: min(780px, 92vw);
+      max-height: 86vh;
+      overflow-y: auto;
+      color: var(--text);
+      box-shadow: var(--shadow-lg);
+    }
+    #help-card h3 {
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #help-card h3::before {
+      content: '';
+      width: 18px; height: 18px;
+      border-radius: 5px;
+      background: radial-gradient(circle at 30% 30%, var(--accent-2), #1f6feb 70%);
+    }
+    #help-card table { width: 100%; border-collapse: collapse; }
+    #help-card td {
+      padding: 7px 0;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    #help-card td:first-child { width: 110px; color: var(--muted); }
+
+    /* Glossary inside the help overlay */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .glossary-item {
       background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .glossary-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .glossary-head strong { color: var(--text); }
+    .glossary-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .glossary-dot.warn   { background: var(--warn); }
+    .glossary-dot.danger { background: var(--danger); }
+    .glossary-dot.good   { background: var(--good); }
+    .glossary-item p {
+      font-size: 11.5px;
+      color: var(--text);
+      line-height: 1.55;
+      margin: 0;
+    }
+    .glossary-item p + p { margin-top: 6px; }
+    .glossary-item code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 10.5px;
+      color: var(--accent-2);
+    }
+    .glossary-item p.example {
+      color: var(--muted);
+      font-size: 11px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+      margin-top: 8px;
+    }
+    .glossary-item p.example em { color: var(--muted-2); font-style: normal; }
+    @media (max-width: 720px) {
+      .glossary-grid { grid-template-columns: 1fr; }
+    }
+    #help-card kbd {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11px;
+      color: var(--text);
+    }
+    #help-close {
+      float: right;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 0;
+      margin-top: -4px;
     }
 
     /* ---- Loading overlay ---- */
@@ -342,18 +780,15 @@
       justify-content: center;
       z-index: 100;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
-
     .spinner {
-      width: 36px;
-      height: 36px;
+      width: 38px; height: 38px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     #error-banner {
@@ -364,144 +799,33 @@
       transform: translateX(-50%);
       background: #3d1e1e;
       border: 1px solid var(--danger);
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 8px 16px;
       color: var(--danger);
       z-index: 50;
       font-size: 12px;
     }
 
-    /* ---- Toast notifications ---- */
-    #toast {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 18px;
-      color: var(--text);
-      z-index: 200;
-      font-size: 12px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    #toast.visible { opacity: 1; }
-
-    /* ---- Help overlay (? key) ---- */
-    #help-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-    }
-    #help-overlay.visible { display: flex; }
-    #help-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 22px 28px;
-      width: min(520px, 90vw);
-      max-height: 80vh;
-      overflow-y: auto;
-      color: var(--text);
-    }
-    #help-card h3 { color: var(--accent); margin-bottom: 12px; }
-    #help-card table { width: 100%; border-collapse: collapse; }
-    #help-card td {
-      padding: 5px 0;
-      font-size: 13px;
-      border-bottom: 1px solid var(--border);
-    }
-    #help-card td:first-child {
-      width: 90px;
-      color: var(--muted);
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    }
-    #help-card kbd {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: 11px;
-    }
-    #help-close {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 18px;
-      cursor: pointer;
-      width: auto;
-      padding: 0;
-      margin-top: -8px;
-    }
-
-    /* ---- Action buttons inside the info panel ---- */
-    .info-actions {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-    .info-actions a, .info-actions button {
-      flex: 1 1 auto;
-      text-decoration: none;
-      text-align: center;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--accent);
-      padding: 5px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      width: auto;
-    }
-    .info-actions a:hover, .info-actions button:hover { background: var(--border); }
-
-    .info-tabs { display: flex; gap: 0; margin-top: 10px; border-bottom: 1px solid var(--border); }
-    .info-tab {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--muted);
-      padding: 5px 10px;
-      font-size: 11px;
-      cursor: pointer;
-      width: auto;
-      border-radius: 0;
-    }
-    .info-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .info-list ul { list-style: none; padding: 0; margin-top: 6px; }
-    .info-list li {
-      font-size: 11px;
-      padding: 2px 0;
-      color: var(--text);
-      cursor: pointer;
-    }
-    .info-list li:hover { color: var(--accent); }
-    .info-list .empty { color: var(--muted); font-size: 11px; padding-top: 4px; }
-
-    /* Minimap (cytoscape-navigator) — restyle for dark theme */
-    .cytoscape-navigator {
+    /* Minimap (cytoscape-navigator) — restyle for dark theme.
+       The extension defaults to position:fixed which puts the minimap in
+       the viewport's bottom-right and ends up overlapping the sidebar; we
+       override to absolute and pin to the bottom-left of the stage. */
+    #cy-minimap, .cytoscape-navigator {
+      position: absolute !important;
       background: var(--surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: 6px;
-      width: 180px !important;
-      height: 130px !important;
-      bottom: 20px !important;
-      left: 280px !important;
+      border-radius: 8px;
+      width: 170px !important;
+      height: 120px !important;
+      bottom: 16px !important;
+      left: 16px !important;
+      top: auto !important;
       right: auto !important;
-      opacity: 0.85;
+      box-shadow: var(--shadow);
+      opacity: 0.92;
+      z-index: 10;
     }
-    .cytoscape-navigatorView { background: rgba(88, 166, 255, 0.25) !important; }
+    .cytoscape-navigatorView { background: rgba(88, 166, 255, 0.22) !important; }
   </style>
 </head>
 <body>
@@ -509,129 +833,147 @@
 <!-- Loading overlay -->
 <div id="loading">
   <div class="spinner"></div>
-  <span style="color:var(--muted)">Loading graph…</span>
+  <span style="color:var(--muted)">Loading constellation…</span>
 </div>
 
 <div id="error-banner"></div>
 
-<!-- Sidebar -->
+<!-- =================================================================== -->
+<!-- Sidebar                                                              -->
+<!-- =================================================================== -->
 <div id="sidebar">
-  <div class="sidebar-section">
-    <h1>DocuGalaxy</h1>
-    <span style="color:var(--muted); font-size:11px" id="graph-title"></span>
-  </div>
 
-  <!-- Stats -->
-  <div class="sidebar-section">
-    <h2>Statistics</h2>
-    <div id="stats-grid">
-      <div class="stat-card"><div class="val" id="stat-nodes">—</div><div class="lbl">Nodes</div></div>
-      <div class="stat-card"><div class="val" id="stat-edges">—</div><div class="lbl">Edges</div></div>
-      <div class="stat-card"><div class="val" id="stat-docs">—</div><div class="lbl">Docs</div></div>
-      <div class="stat-card"><div class="val" id="stat-ext">—</div><div class="lbl">External</div></div>
-    </div>
-  </div>
-
-  <!-- Quality metrics -->
-  <div class="sidebar-section" id="quality-section" style="display:none">
-    <h2>Quality</h2>
-    <div id="stats-grid">
-      <div class="stat-card"><div class="val" id="q-purity">—</div><div class="lbl">Diataxis purity</div></div>
-      <div class="stat-card"><div class="val" id="q-reach">—</div><div class="lbl">Reach @3</div></div>
-    </div>
-    <div id="findings-list" style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
-      <!-- populated by JS -->
+  <div class="brand">
+    <div class="brand-logo"></div>
+    <div class="brand-text">
+      <h1>DocuGalaxy</h1>
+      <span id="graph-title"></span>
     </div>
   </div>
 
   <!-- Search -->
   <div class="sidebar-section">
-    <h2>Search</h2>
-    <input id="search-input" type="search" placeholder="Filter nodes by label…" />
+    <h2>Find</h2>
+    <input id="search-input" type="search" placeholder="Search nodes by name…" />
     <span id="search-info"></span>
   </div>
 
-  <!-- Presets -->
-  <div class="sidebar-section">
-    <h2>Quick views <span style="color:var(--muted);font-weight:400">(1–6)</span></h2>
-    <div class="preset-grid">
-      <button class="preset-btn active" data-preset="all" data-key="1">All</button>
-      <button class="preset-btn" data-preset="docs" data-key="2">Docs only</button>
-      <button class="preset-btn" data-preset="hubs" data-key="3">Top hubs</button>
-      <button class="preset-btn" data-preset="orphans" data-key="4">Orphans</button>
-      <button class="preset-btn" data-preset="deadends" data-key="5">Dead ends</button>
-      <button class="preset-btn" data-preset="broken" data-key="6">Broken refs</button>
+  <!-- Findings — the priority list -->
+  <div class="sidebar-section" id="findings-section">
+    <h2 class="section-with-info">
+      <span>Findings</span>
+      <button class="info-btn" id="findings-info" title="What do these mean?">?</button>
+    </h2>
+    <div class="findings" id="findings-list">
+      <!-- populated by JS -->
     </div>
   </div>
 
-  <!-- Layout -->
+  <!-- Views -->
   <div class="sidebar-section">
-    <h2>Layout</h2>
-    <select id="layout-select">
-      <option value="fcose" selected>fCoSE (best for clusters)</option>
+    <h2>Views</h2>
+    <div class="views">
+      <div class="view-row active" data-preset="all"      data-key="1"><span>All nodes</span><span class="kbd">1</span></div>
+      <div class="view-row"        data-preset="docs"     data-key="2"><span>Docs only</span><span class="kbd">2</span></div>
+      <div class="view-row"        data-preset="hubs"     data-key="3"><span>Top hubs (25)</span><span class="kbd">3</span></div>
+      <div class="view-row"        data-preset="orphans"  data-key="4"><span>Orphans</span><span class="kbd">4</span></div>
+      <div class="view-row"        data-preset="deadends" data-key="5"><span>Dead ends</span><span class="kbd">5</span></div>
+      <div class="view-row"        data-preset="broken"   data-key="6"><span>Broken refs</span><span class="kbd">6</span></div>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <details class="foldable sidebar-section">
+    <summary>Display</summary>
+    <select id="layout-select" style="margin-bottom:6px">
+      <option value="fcose" selected>fCoSE (clusters)</option>
       <option value="cose">CoSE (force-directed)</option>
-      <option value="concentric">Concentric (by intensity)</option>
+      <option value="concentric">Concentric (by importance)</option>
       <option value="breadthfirst">Breadth-first</option>
       <option value="circle">Circle</option>
       <option value="grid">Grid</option>
-      <option value="random">Random</option>
     </select>
-    <div class="btn-row" style="margin-top:4px">
-      <button id="btn-run-layout">Run layout</button>
-      <button id="btn-fit">Fit</button>
+    <div class="btn-row">
+      <button class="btn" id="btn-run-layout">Re-layout</button>
+      <button class="btn" id="btn-fit">Fit</button>
     </div>
-  </div>
+    <div style="margin-top:10px;color:var(--muted-2);font-size:10px;text-transform:uppercase;letter-spacing:1.2px">Edge layers</div>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="doc_link" checked> Doc links</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="external_link" checked> External</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="link" checked> Inline</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="ref_link" checked> References</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="anchor_link" checked> Anchors</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="include" checked> Includes</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="image" checked> Images</label>
+    <label class="edge-toggle-row"><input type="checkbox" class="edge-toggle" value="term_link" checked> Terms</label>
+  </details>
 
-  <!-- Filters -->
-  <div class="sidebar-section">
-    <h2>Show edges</h2>
-    <label><input type="checkbox" class="edge-toggle" value="doc_link" checked> doc links</label>
-    <label><input type="checkbox" class="edge-toggle" value="external_link" checked> external</label>
-    <label><input type="checkbox" class="edge-toggle" value="link" checked> inline links</label>
-    <label><input type="checkbox" class="edge-toggle" value="ref_link" checked> references</label>
-    <label><input type="checkbox" class="edge-toggle" value="include" checked> includes</label>
-    <label><input type="checkbox" class="edge-toggle" value="anchor_link" checked> anchors</label>
-    <label><input type="checkbox" class="edge-toggle" value="image" checked> images</label>
-    <label><input type="checkbox" class="edge-toggle" value="term_link" checked> terms</label>
-  </div>
-
-  <!-- Diataxis legend -->
-  <div class="sidebar-section">
-    <h2>Diataxis (documents)</h2>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-tutorial)"></div><span>tutorial</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-how-to)"></div><span>how-to</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-reference)"></div><span>reference</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-explanation)"></div><span>explanation</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-meta)"></div><span>meta / other</span></div>
-  </div>
-
-  <!-- Other node types -->
-  <div class="sidebar-section">
-    <h2>Other node types</h2>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-external)"></div><span>external URL</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-label)"></div><span>label / ref target</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-anchor)"></div><span>anchor</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--c-asset)"></div><span>asset</span></div>
-    <div class="legend-item" style="margin-top:6px;color:var(--muted);font-size:11px">
-      Node size = link intensity (in + out)
+  <!-- Legend (compact, foldable) -->
+  <details class="foldable sidebar-section">
+    <summary>Legend</summary>
+    <div style="color:var(--muted-2);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px">Documents</div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-tutorial)"></div><span>Tutorial</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-how-to)"></div><span>How-to</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-reference)"></div><span>Reference</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-explanation)"></div><span>Explanation</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-meta)"></div><span>Meta / other</span></div>
+    <div style="color:var(--muted-2);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;margin:8px 0 3px">Other nodes</div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-external)"></div><span>External URL</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-label)"></div><span>Label / ref target</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:var(--c-anchor)"></div><span>Anchor</span></div>
+    <div class="legend-note">
+      Node <strong>size</strong> = number of links in + out.<br/>
+      <strong>Dashed red ring</strong> = broken target.
     </div>
-  </div>
+  </details>
 
-  <div class="sidebar-section">
-    <h2>Edge types</h2>
-    <div class="legend-item"><div class="legend-line" style="background:var(--e-doc-link)"></div><span>doc link</span></div>
-    <div class="legend-item"><div class="legend-line" style="background:var(--e-external-link)"></div><span>external</span></div>
-    <div class="legend-item"><div class="legend-line" style="background:var(--e-include)"></div><span>include</span></div>
-    <div class="legend-item"><div class="legend-line" style="background:var(--e-ref-link)"></div><span>reference</span></div>
-    <div class="legend-item"><div class="legend-line" style="background:var(--e-anchor-link)"></div><span>anchor</span></div>
+  <div style="flex:1"></div>
+  <div style="color:var(--muted-2);font-size:10px;text-align:center;border-top:1px solid var(--border);padding-top:10px">
+    Press <kbd style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:0 5px;font-family:ui-monospace,monospace;font-size:10px">?</kbd>
+    for shortcuts
   </div>
 </div>
 
-<!-- Canvas area with view tabs -->
+<!-- =================================================================== -->
+<!-- Canvas area                                                          -->
+<!-- =================================================================== -->
 <div id="canvas-area">
-  <div id="view-tabs">
-    <button class="view-tab active" data-view="internal">Internal links</button>
-    <button class="view-tab" data-view="external">External links</button>
+
+  <!-- Metrics bar -->
+  <div id="metrics-bar">
+    <div class="metric"><div class="val" id="m-docs">—</div><div class="lbl">Documents</div></div>
+    <div class="metric"><div class="val" id="m-edges">—</div><div class="lbl">Links</div></div>
+    <div class="metric good" id="m-purity-card" style="display:none">
+      <div class="val" id="m-purity">—</div><div class="lbl">Diataxis purity</div>
+    </div>
+    <div class="metric" id="m-reach-card" style="display:none">
+      <div class="val" id="m-reach">—</div><div class="lbl" id="m-reach-lbl">Reach @ 3</div>
+    </div>
+    <div class="metric danger clickable" id="m-broken-card" style="display:none" data-preset="broken">
+      <div class="val" id="m-broken">—</div><div class="lbl">Broken refs</div>
+    </div>
+    <div class="metric warn clickable" id="m-orphans-card" style="display:none" data-preset="orphans">
+      <div class="val" id="m-orphans">—</div><div class="lbl">Orphans</div>
+    </div>
+    <div class="metric warn clickable" id="m-dead-card" style="display:none" data-preset="deadends">
+      <div class="val" id="m-dead">—</div><div class="lbl">Dead ends</div>
+    </div>
+
+    <div class="metric-spacer"></div>
+
+    <div class="view-toggle" role="tablist">
+      <button class="view-tab active" data-view="internal">Internal</button>
+      <button class="view-tab"        data-view="external">External</button>
+    </div>
+  </div>
+
+  <!-- Stage: everything below the metrics bar -->
+  <div id="stage">
+
+  <!-- First-time hint -->
+  <div id="hint">
+    <span>💡 Click any <strong>metric</strong> or <strong>finding</strong> to filter. Press <kbd>?</kbd> for shortcuts.</span>
+    <button class="close" id="hint-close">✕</button>
   </div>
 
   <!-- Graph canvas -->
@@ -639,15 +981,18 @@
 
   <!-- Node info panel -->
   <div id="info-panel">
-    <button id="info-close">✕</button>
-    <h3 id="info-title"></h3>
+    <div id="info-header">
+      <div id="info-title"></div>
+      <button id="info-close" title="Close (Esc)">✕</button>
+    </div>
+    <div id="info-chips"></div>
     <div id="info-body"></div>
     <div class="info-actions" id="info-actions"></div>
     <div class="info-tabs" id="info-tabs">
-      <button class="info-tab active" data-tab="incoming">⬅ Linked from</button>
-      <button class="info-tab" data-tab="outgoing">Links to ➡</button>
+      <button class="info-tab active" data-tab="incoming">⬅ Linked from <span id="info-in-count" style="color:var(--muted)"></span></button>
+      <button class="info-tab"        data-tab="outgoing">Links to ➡ <span id="info-out-count" style="color:var(--muted)"></span></button>
     </div>
-    <div class="info-list" id="info-list"></div>
+    <div id="info-list"></div>
   </div>
 
   <!-- Minimap container -->
@@ -660,24 +1005,123 @@
   <div id="help-overlay">
     <div id="help-card">
       <button id="help-close">✕</button>
-      <h3>Keyboard shortcuts</h3>
+      <h3>DocuGalaxy</h3>
+
+      <h4 id="glossary" style="font-size:13px;color:var(--accent);margin:8px 0 8px">What the findings mean</h4>
+
+      <div class="glossary-grid">
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot danger"></span>
+            <strong>Broken doc refs</strong>
+          </div>
+          <p>A link in one page points at a file path that doesn't exist on disk. Readers
+          who click it land on a 404 (or the docs build fails). Usually caused by a rename
+          or move where the linker wasn't updated.</p>
+          <p class="example"><em>Example:</em> <code>[install guide](how-to/install.md)</code> when the file is now <code>how-to/installation.md</code>.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot danger"></span>
+            <strong>Broken anchors</strong>
+          </div>
+          <p>A link to a heading on a page where that heading no longer exists. The reader
+          lands on the page but doesn't scroll to anything meaningful.</p>
+          <p class="example"><em>Example:</em> <code>[](architecture.md#authentication)</code> when the page no longer has an "Authentication" heading.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot danger"></span>
+            <strong>Broken labels</strong>
+          </div>
+          <p>A <code>{ref}</code> or <code>:ref:</code> cross-reference using a label name
+          that was never defined anywhere with <code>(label-name)=</code>. Sphinx fails to
+          resolve it and the link renders as plain text.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot warn"></span>
+            <strong>Orphans</strong>
+          </div>
+          <p>A document with <strong>zero incoming internal links</strong> — no other page in
+          the docs links to it. The only way a reader reaches it is direct URL or search.
+          Often a sign of a forgotten page, a page that should appear in nav, or a stale
+          file left behind during restructuring.</p>
+          <p class="example"><em>Not always bad:</em> a release-notes index page reached only via
+          a top-level menu can be legitimately orphan-in-the-link-graph.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot warn"></span>
+            <strong>Dead ends</strong>
+          </div>
+          <p>A document with <strong>zero outgoing internal links</strong>. Once a reader
+          lands on this page, there is nothing to click — no "see also", no "next step",
+          no link back to the parent overview. Bad for journey-building and discoverability,
+          and the most common driver of bounces.</p>
+          <p class="example"><em>Common causes:</em> stub pages, short reference cards that should
+          link to related how-tos, pages where the author forgot a "Related" section.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot"></span>
+            <strong>Diataxis crosses</strong>
+          </div>
+          <p>An internal link where the source and target sit in <strong>different
+          Diataxis sections</strong> (tutorial → how-to, how-to → reference, etc.).
+          Some crossing is healthy — a tutorial linking to a reference for syntax is
+          fine. A high number, especially <code>tutorial → reference</code>, signals
+          the tutorial may have drifted toward being a reference doc.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot good"></span>
+            <strong>Diataxis purity</strong>
+          </div>
+          <p>Of all internal links between documents in <em>named</em> Diataxis sections
+          (excluding meta pages like <code>index.md</code>), the percentage that stay
+          <em>within</em> their section. <strong>Higher is better</strong>: each section
+          stays internally coherent. A sudden drop after a restructure is usually
+          investigation-worthy.</p>
+        </div>
+
+        <div class="glossary-item">
+          <div class="glossary-head">
+            <span class="glossary-dot"></span>
+            <strong>Reach @ 3</strong>
+          </div>
+          <p>Starting from the entry page (usually <code>index.md</code>), the
+          percentage of documents reachable in <strong>three or fewer link hops</strong>.
+          Approximates "how much of your docs can a reader discover from the front door?"
+          Higher is better; low values signal weak top-level navigation.</p>
+        </div>
+      </div>
+
+      <h4 style="font-size:13px;color:var(--accent);margin:18px 0 8px">Keyboard shortcuts</h4>
       <table>
         <tr><td><kbd>/</kbd></td><td>Focus search</td></tr>
         <tr><td><kbd>Esc</kbd></td><td>Clear / close panels</td></tr>
-        <tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>Switch quick view (All / Docs / Hubs / Orphans / Dead ends / Broken)</td></tr>
-        <tr><td><kbd>i</kbd></td><td>Toggle internal vs external view</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>6</kbd></td><td>Switch view (All / Docs / Hubs / Orphans / Dead ends / Broken)</td></tr>
+        <tr><td><kbd>i</kbd></td><td>Toggle internal vs external links</td></tr>
         <tr><td><kbd>f</kbd></td><td>Fit graph</td></tr>
         <tr><td><kbd>r</kbd></td><td>Re-run layout</td></tr>
         <tr><td><kbd>o</kbd></td><td>Open source URL of selected node</td></tr>
-        <tr><td><kbd>c</kbd></td><td>Copy selected node's impact list as Markdown</td></tr>
+        <tr><td><kbd>c</kbd></td><td>Copy selected node's impact as Markdown</td></tr>
         <tr><td><kbd>?</kbd></td><td>Show / hide this help</td></tr>
       </table>
-      <p style="color:var(--muted);font-size:11px;margin-top:14px">
-        Pro tip: the URL fragment reflects the selected node and preset — copy
-        the URL to share a view.
+      <p style="color:var(--muted);font-size:11px;margin-top:14px;line-height:1.5">
+        The URL hash reflects the selected node, view, and preset — copy the URL to share a view.
       </p>
     </div>
   </div>
+
+  </div> <!-- /#stage -->
 </div>
 
 <script src="/static/js/visualization.js"></script>

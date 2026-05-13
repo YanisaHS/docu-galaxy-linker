@@ -134,50 +134,69 @@
         selector: 'node',
         style: {
           label: 'data(label)',
-          'font-size': 'mapData(size, 14, 80, 6, 14)',
+          'font-size': 'mapData(size, 14, 80, 7, 15)',
+          'font-weight': 500,
           color: '#e6edf3',
           'text-valign': 'bottom',
-          'text-margin-y': 4,
-          'text-outline-color': '#0e1117',
-          'text-outline-width': 2,
+          'text-margin-y': 5,
+          'text-outline-color': '#0b0e14',
+          'text-outline-width': 2.5,
           width:  'data(size)',
           height: 'data(size)',
           'border-width': 0,
+          'transition-property': 'background-color, border-color, border-width, opacity, width, height',
+          'transition-duration': '120ms',
         },
       },
-      { selector: 'node[size <= 22]', style: { 'text-opacity': 0 } },
+      { selector: 'node[size <= 24]', style: { 'text-opacity': 0 } },
       ...nodeType,
       ...dia,
       ...edgeType,
       {
         selector: 'node[broken = "true"]',
         style: {
-          'border-width': 2,
+          'border-width': 2.5,
           'border-color': '#f85149',
           'border-style': 'dashed',
+          'border-opacity': 0.9,
         },
       },
       {
-        selector: 'node:selected, node.highlighted',
+        selector: 'node:selected',
+        style: {
+          'border-width': 4,
+          'border-color': '#f8e3a1',
+          'border-opacity': 1,
+          'text-opacity': 1,
+        },
+      },
+      {
+        selector: 'node.highlighted',
         style: {
           'border-width': 3,
           'border-color': '#f8e3a1',
           'text-opacity': 1,
         },
       },
-      { selector: 'node.dimmed', style: { opacity: 0.08, 'text-opacity': 0 } },
+      { selector: 'node.dimmed', style: { opacity: 0.12, 'text-opacity': 0 } },
       {
         selector: 'edge',
         style: {
-          width: 'mapData(weight, 1, 10, 1, 5)',
+          width: 'mapData(weight, 1, 10, 1.3, 5)',
           'curve-style': 'bezier',
           'target-arrow-shape': 'triangle',
-          'arrow-scale': 0.7,
+          'arrow-scale': 1.0,
+          'target-arrow-fill': 'filled',
           opacity: 0.55,
+          'transition-property': 'opacity, width, line-color',
+          'transition-duration': '120ms',
         },
       },
-      { selector: 'edge.dimmed', style: { opacity: 0.03 } },
-      { selector: 'edge:selected, edge.highlighted', style: { width: 3, opacity: 1 } },
+      { selector: 'edge.dimmed', style: { opacity: 0.04 } },
+      {
+        selector: 'edge:selected, edge.highlighted',
+        style: { width: 3.2, opacity: 1, 'z-index': 10 },
+      },
     ];
   }
 
@@ -228,8 +247,46 @@
     const opts = layoutOptions(name, visibleEles);
     opts.eles = visibleEles;
     if (!animate) opts.animate = false;
-    cy.layout(opts).run();
-    cy.fit(visibleEles, 40);
+    const layout = cy.layout(opts);
+    // Fit *after* layout settles. Calling fit synchronously after .run()
+    // frames the pre-animation positions, which makes the cluster look
+    // off-center when animation is enabled.
+    layout.one('layoutstop', () => fitVisible(cy));
+    layout.run();
+  }
+
+  // Fit the visible elements into the viewport, leaving room for the info
+  // panel when it's open. cy.fit() always centers in the full container, so
+  // an open panel pushes the cluster visually to the left — we compensate
+  // by computing an asymmetric pan/zoom.
+  function fitVisible(cy) {
+    const eles = cy.elements(':visible');
+    if (eles.length === 0) return;
+    const panel = document.getElementById('info-panel');
+    const panelOpen = panel && panel.classList.contains('visible');
+    const padding = 40;
+    if (!panelOpen) {
+      cy.fit(eles, padding);
+      return;
+    }
+    const containerW = cy.width();
+    const containerH = cy.height();
+    // Reserve space on the right for the panel (width + its 14px gap on
+    // each side, rounded up a little so the cluster never grazes the panel).
+    const reserveRight = panel.offsetWidth + 32;
+    const availW = Math.max(120, containerW - reserveRight);
+    const bb = eles.boundingBox();
+    if (bb.w === 0 || bb.h === 0) { cy.fit(eles, padding); return; }
+    const zoom = Math.min(
+      (availW - padding * 2) / bb.w,
+      (containerH - padding * 2) / bb.h,
+    );
+    cy.zoom(zoom);
+    const bbCenter = { x: bb.x1 + bb.w / 2, y: bb.y1 + bb.h / 2 };
+    cy.pan({
+      x: availW / 2 - bbCenter.x * zoom,
+      y: containerH / 2 - bbCenter.y * zoom,
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -291,8 +348,11 @@
 
   function applyPreset(preset, cy) {
     state.preset = preset;
-    document.querySelectorAll('.preset-btn').forEach(b => {
+    document.querySelectorAll('.view-row').forEach(b => {
       b.classList.toggle('active', b.dataset.preset === preset);
+    });
+    document.querySelectorAll('.finding').forEach(b => {
+      b.classList.toggle('active', b.dataset.preset === preset && preset !== 'all');
     });
     if (preset === 'all') {
       writeHash();
@@ -354,49 +414,53 @@
     node.removeClass('dimmed');
     node.neighborhood().removeClass('dimmed');
 
-    document.getElementById('info-title').textContent = data.label || data.id;
+    // Title — show the path stem prominently, full path as the id row.
+    const stem = (data.label || data.id).split('/').pop();
+    document.getElementById('info-title').textContent = stem;
 
-    const diaChip = data.diataxis
-      ? `<span style="display:inline-block;padding:1px 8px;border-radius:10px;
-                     background:${DIATAXIS_COLORS[data.diataxis]}22;
-                     border:1px solid ${DIATAXIS_COLORS[data.diataxis]};
-                     color:${DIATAXIS_COLORS[data.diataxis]};font-size:11px">
-          ${data.diataxis}</span> `
-      : '';
-    const brokenChip = data.broken === 'true'
-      ? `<span style="display:inline-block;padding:1px 8px;border-radius:10px;
-                      background:#f8514922;border:1px solid #f85149;
-                      color:#f85149;font-size:11px">broken</span> `
-      : '';
+    // Chips (Diataxis, type, broken)
+    const chips = [];
+    if (data.diataxis) {
+      const c = DIATAXIS_COLORS[data.diataxis];
+      chips.push(`<span class="chip" style="background:${c}1f;border:1px solid ${c}80;color:${c}">${escHtml(data.diataxis)}</span>`);
+    }
+    if (data.type && data.type !== 'document') {
+      chips.push(`<span class="chip" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${escHtml(data.type)}</span>`);
+    }
+    if (data.broken === 'true') {
+      chips.push(`<span class="chip" style="background:rgba(248,81,73,0.12);border:1px solid var(--danger);color:var(--danger)">⚠ broken</span>`);
+    }
+    chips.push(`<span class="chip" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)">${data._inDeg ?? 0} in · ${data._outDeg ?? 0} out</span>`);
+    document.getElementById('info-chips').innerHTML = chips.join(' ');
 
-    const rows = [
-      ['id', data.id],
-      ['type', data.type],
-      data.path ? ['path', data.path] : null,
-      data.url  ? ['url', `<a href="${escHtml(data.url)}" target="_blank" rel="noopener" style="color:var(--accent)">${escHtml(data.url)}</a>`] : null,
-      ['in-degree',  data._inDeg  ?? node.indegree()],
-      ['out-degree', data._outDeg ?? node.outdegree()],
-      ['intensity',  (data._intensity || 0).toFixed(2)],
-    ].filter(Boolean);
-
-    document.getElementById('info-body').innerHTML = diaChip + brokenChip + rows.map(([k, v]) =>
-      `<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${k === 'url' ? v : escHtml(v)}</span></div>`
+    // Body — show only the most relevant rows. Path/URL get prominence.
+    const rows = [];
+    if (data.path && data.path !== stem) rows.push(['path', data.path]);
+    if (data.url) rows.push(['url',
+      `<a href="${escHtml(data.url)}" target="_blank" rel="noopener">${escHtml(data.url)}</a>`]);
+    if (data.id !== data.path && data.id !== data.label) rows.push(['id', data.id]);
+    document.getElementById('info-body').innerHTML = rows.map(([k, v]) =>
+      `<div class="info-row"><span class="k">${k}</span><span class="v">${k === 'url' ? v : escHtml(v)}</span></div>`
     ).join('');
 
-    // Action buttons (open source, open URL, copy markdown)
+    // Action buttons — source URL primary if available.
     const actions = [];
     if (data.source_url) {
-      actions.push(`<a href="${escHtml(data.source_url)}" target="_blank" rel="noopener">📄 Open source</a>`);
+      actions.push(`<a class="primary" href="${escHtml(data.source_url)}" target="_blank" rel="noopener">Open source ↗</a>`);
     }
     if (data.render_url) {
-      actions.push(`<a href="${escHtml(data.render_url)}" target="_blank" rel="noopener">🌐 Open page</a>`);
+      actions.push(`<a href="${escHtml(data.render_url)}" target="_blank" rel="noopener">Open page ↗</a>`);
     }
     if (data.url && data.type === 'external') {
-      actions.push(`<a href="${escHtml(data.url)}" target="_blank" rel="noopener">↗ Open URL</a>`);
+      actions.push(`<a class="primary" href="${escHtml(data.url)}" target="_blank" rel="noopener">Visit ↗</a>`);
     }
-    actions.push(`<button id="info-copy">📋 Copy impact as Markdown</button>`);
+    actions.push(`<button id="info-copy">Copy impact as Markdown</button>`);
     document.getElementById('info-actions').innerHTML = actions.join('');
     document.getElementById('info-copy').addEventListener('click', () => copyImpactMarkdown(node));
+
+    // Tab counts
+    document.getElementById('info-in-count').textContent  = ` ${node.incomers('node').length}`;
+    document.getElementById('info-out-count').textContent = ` ${node.outgoers('node').length}`;
 
     renderInfoList(node, cy, activeInfoTab);
 
@@ -544,45 +608,101 @@
     // post-processing is needed here.
     let elements = dedupeAndAnnotate(data.elements);
 
-    // Populate stats
+    // Populate stats — metrics bar across the top of the canvas.
     const statsData = data.stats;
     if (statsData) {
-      document.getElementById('stat-nodes').textContent = formatNumber(statsData.total_nodes);
-      document.getElementById('stat-edges').textContent = formatNumber(statsData.total_edges);
-      document.getElementById('stat-docs').textContent  = formatNumber(statsData.node_types?.document ?? 0);
-      document.getElementById('stat-ext').textContent   = formatNumber(statsData.node_types?.external ?? 0);
+      const q = statsData.quality || {};
+      const docCount = statsData.node_types?.document ?? 0;
+      document.getElementById('m-docs').textContent  = formatNumber(docCount);
+      document.getElementById('m-edges').textContent = formatNumber(statsData.total_edges);
 
-      // Quality metrics
-      const q = statsData.quality;
-      if (q) {
-        document.getElementById('quality-section').style.display = '';
-        document.getElementById('q-purity').textContent =
+      if (q.diataxis_purity !== undefined) {
+        document.getElementById('m-purity-card').style.display = '';
+        document.getElementById('m-purity').textContent =
           (q.diataxis_purity * 100).toFixed(0) + '%';
-        document.getElementById('q-reach').textContent =
-          (q.reachability_at_3 * 100).toFixed(0) + '%';
-
-        const findings = document.getElementById('findings-list');
-        const items = [
-          { label: 'Orphans',         count: q.orphans,           preset: 'orphans',  cls: q.orphans > 0 ? 'warn' : '' },
-          { label: 'Dead ends',       count: q.dead_ends,         preset: 'deadends', cls: q.dead_ends > 0 ? 'warn' : '' },
-          { label: 'Broken doc refs', count: q.broken_doc_refs,   preset: 'broken',   cls: q.broken_doc_refs > 0 ? 'danger' : '' },
-          { label: 'Broken anchors',  count: q.broken_anchors,    preset: 'broken',   cls: q.broken_anchors > 0 ? 'danger' : '' },
-          { label: 'Broken labels',   count: q.broken_label_refs, preset: 'broken',   cls: q.broken_label_refs > 0 ? 'danger' : '' },
-          { label: 'Diataxis crosses', count: q.diataxis_cross_edges, preset: 'all',  cls: '' },
-        ];
-        findings.innerHTML = items.map(it =>
-          `<div class="finding-row ${it.cls}" data-preset="${it.preset}">
-             <span>${escHtml(it.label)}</span>
-             <span class="count">${it.count}</span>
-           </div>`
-        ).join('');
-        findings.querySelectorAll('.finding-row[data-preset]').forEach(row => {
-          row.addEventListener('click', () => {
-            const btn = document.querySelector(`.preset-btn[data-preset="${row.dataset.preset}"]`);
-            if (btn) btn.click();
-          });
-        });
+        const card = document.getElementById('m-purity-card');
+        card.classList.remove('good', 'warn', 'danger');
+        card.classList.add(q.diataxis_purity >= 0.8 ? 'good'
+                           : q.diataxis_purity >= 0.6 ? 'warn' : 'danger');
       }
+      if (q.reachability_at_3 !== undefined) {
+        document.getElementById('m-reach-card').style.display = '';
+        document.getElementById('m-reach').textContent =
+          (q.reachability_at_3 * 100).toFixed(0) + '%';
+        const card = document.getElementById('m-reach-card');
+        card.classList.remove('good', 'warn', 'danger');
+        card.classList.add(q.reachability_at_3 >= 0.7 ? 'good'
+                           : q.reachability_at_3 >= 0.4 ? 'warn' : 'danger');
+        if (q.reachability_entry) {
+          document.getElementById('m-reach-lbl').textContent =
+            'Reach @3  ←  ' + q.reachability_entry;
+        }
+      }
+      const brokenTotal = (q.broken_doc_refs || 0) + (q.broken_anchors || 0) + (q.broken_label_refs || 0);
+      if (brokenTotal > 0) {
+        document.getElementById('m-broken-card').style.display = '';
+        document.getElementById('m-broken').textContent = brokenTotal;
+      }
+      if (q.orphans > 0) {
+        document.getElementById('m-orphans-card').style.display = '';
+        document.getElementById('m-orphans').textContent = q.orphans;
+      }
+      if (q.dead_ends > 0) {
+        document.getElementById('m-dead-card').style.display = '';
+        document.getElementById('m-dead').textContent = q.dead_ends;
+      }
+
+      // Sidebar findings list — same data, different presentation.
+      const findings = document.getElementById('findings-list');
+      const items = [
+        { label: 'Broken doc refs',  desc: 'Links pointing to files that don’t exist',
+          count: q.broken_doc_refs,    preset: 'broken',   sev: 'danger' },
+        { label: 'Broken anchors',   desc: 'Links to a heading that isn’t on the page',
+          count: q.broken_anchors,     preset: 'broken',   sev: 'danger' },
+        { label: 'Broken labels',    desc: 'Cross-refs to a label that was never defined',
+          count: q.broken_label_refs,  preset: 'broken',   sev: 'danger' },
+        { label: 'Orphans',          desc: 'Pages no other page links to',
+          count: q.orphans,            preset: 'orphans',  sev: 'warn' },
+        { label: 'Dead ends',        desc: 'Pages that don’t link anywhere else',
+          count: q.dead_ends,          preset: 'deadends', sev: 'warn' },
+        { label: 'Diataxis crosses', desc: 'Internal links that jump between sections',
+          count: q.diataxis_cross_edges, preset: 'all',    sev: '' },
+      ].filter(it => it.count !== undefined);
+
+      findings.innerHTML = items.map(it => {
+        const sevCls = it.count > 0 ? it.sev : '';
+        return `<div class="finding ${sevCls}" data-preset="${it.preset}"
+                     data-finding-key="${escHtml(it.label)}"
+                     title="${escHtml(it.label)} — ${escHtml(it.desc)}. Click to filter; press ? for the full glossary.">
+                  <span class="dot"></span>
+                  <span class="label">${escHtml(it.label)}</span>
+                  <span class="count">${it.count ?? 0}</span>
+                  <span class="desc">${escHtml(it.desc)}</span>
+                </div>`;
+      }).join('');
+      findings.querySelectorAll('.finding[data-preset]').forEach(row => {
+        row.addEventListener('click', () => {
+          const preset = row.dataset.preset;
+          applyView(state.view, cy);
+          applyPreset(preset, cy);
+          runLayout(cy, false);
+          toast(`Showing: ${row.querySelector('.label').textContent.toLowerCase()}`);
+        });
+      });
+    }
+
+    // Findings "?" button opens the help overlay scrolled to the glossary
+    const fInfo = document.getElementById('findings-info');
+    if (fInfo) {
+      fInfo.addEventListener('click', e => {
+        e.stopPropagation();
+        toggleHelp(true);
+        // give the overlay a tick to render, then scroll the glossary heading in
+        setTimeout(() => {
+          const g = document.getElementById('glossary');
+          if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 30);
+      });
     }
     document.getElementById('graph-title').textContent =
       document.querySelector('title').textContent.replace('DocuGalaxy — ', '');
@@ -649,19 +769,39 @@
       });
     });
 
-    // ----- Presets -----
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    // ----- View rows (sidebar) -----
+    document.querySelectorAll('.view-row').forEach(row => {
+      row.addEventListener('click', () => {
         applyView(state.view, cy);
-        applyPreset(btn.dataset.preset, cy);
+        applyPreset(row.dataset.preset, cy);
         runLayout(cy, false);
       });
     });
 
+    // ----- Clickable metric cards -----
+    document.querySelectorAll('.metric.clickable').forEach(card => {
+      card.addEventListener('click', () => {
+        applyView(state.view, cy);
+        applyPreset(card.dataset.preset, cy);
+        runLayout(cy, false);
+      });
+    });
+
+    // ----- First-time hint -----
+    if (!localStorage.getItem('dgl-hint-dismissed')) {
+      const hint = document.getElementById('hint');
+      setTimeout(() => hint.classList.add('visible'), 700);
+      const dismiss = () => {
+        hint.classList.remove('visible');
+        localStorage.setItem('dgl-hint-dismissed', '1');
+      };
+      document.getElementById('hint-close').addEventListener('click', dismiss);
+      setTimeout(dismiss, 10000);
+    }
+
     // ----- Layout -----
     document.getElementById('btn-run-layout').addEventListener('click', () => runLayout(cy, true));
-    document.getElementById('btn-fit').addEventListener('click',
-      () => cy.fit(cy.elements(':visible'), 40));
+    document.getElementById('btn-fit').addEventListener('click', () => fitVisible(cy));
 
     // ----- Edge toggles -----
     document.querySelectorAll('.edge-toggle').forEach(cb => {
@@ -728,6 +868,10 @@
       cy.$('node:selected').unselect();
       state.sel = null;
       writeHash();
+      // Panel just freed ~390px on the right; re-center the cluster smoothly
+      // in the now-full canvas.
+      const eles = cy.elements(':visible');
+      if (eles.length) cy.animate({ fit: { eles, padding: 40 }, duration: 260 });
     }
 
     // ----- Help overlay -----
@@ -751,7 +895,7 @@
       if (inForm) return;
       if (e.key === '/') { e.preventDefault(); searchInput.focus(); return; }
       if (e.key === '?') { toggleHelp(); return; }
-      if (e.key === 'f') { cy.fit(cy.elements(':visible'), 40); return; }
+      if (e.key === 'f') { fitVisible(cy); return; }
       if (e.key === 'r') { runLayout(cy, true); return; }
       if (e.key === 'i') {
         const next = state.view === 'internal' ? 'external' : 'internal';
@@ -774,7 +918,7 @@
         return;
       }
       // 1..6: presets
-      const btn = document.querySelector(`.preset-btn[data-key="${e.key}"]`);
+      const btn = document.querySelector(`.view-row[data-key="${e.key}"]`);
       if (btn) btn.click();
     });
 
