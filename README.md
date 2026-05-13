@@ -46,15 +46,33 @@ From a docs repo it produces:
 
 ---
 
-## Installation
-
-```bash
-# From the repo root
-python3 -m venv .venv
-.venv/bin/pip install -e .
-```
+## Running locally
 
 Requires Python 3.11+.
+
+```bash
+# 1. Create a virtual environment and install the package
+python3 -m venv .venv
+.venv/bin/pip install -e .
+
+# 2. Clone a docs project (landscape-documentation used as the example throughout)
+git clone https://github.com/canonical/landscape-documentation repos/landscape-documentation
+
+# 3. Extract the link graph
+.venv/bin/docu-galaxy-linker extract repos/landscape-documentation \
+    -o graphs/landscape-documentation.json
+
+# 4. Open the interactive visualisation
+.venv/bin/docu-galaxy-linker visualize graphs/landscape-documentation.json
+# → open http://127.0.0.1:5000
+```
+
+If you want to run `docu-galaxy-linker` without the `.venv/bin/` prefix, activate the virtual environment first:
+
+```bash
+source .venv/bin/activate
+docu-galaxy-linker visualize graphs/landscape-documentation.json
+```
 
 ---
 
