@@ -100,13 +100,17 @@ def create_concept_app(graph_data: dict[str, Any]) -> Flask:
         for e in edges:
             elements.append({
                 'data': {
-                    'id': f"{e['source']}→{e['target']}",
+                    'id': f"{e.get('edge_type', 'edge')}:{e['source']}→{e['target']}",
                     'source': e['source'],
                     'target': e['target'],
                     'type': e.get('edge_type', 'unknown'),
                     'label': e.get('label', ''),
                     'similarity': e.get('metadata', {}).get('similarity', None),
                     'shared_terms': e.get('metadata', {}).get('shared_terms', []),
+                    'heading_overlap': e.get('metadata', {}).get('heading_overlap', 0),
+                    'overlap_coefficient': e.get('metadata', {}).get('overlap_coefficient', None),
+                    'potential_duplicate': e.get('metadata', {}).get('potential_duplicate', False),
+                    'jaccard': e.get('metadata', {}).get('jaccard', None),
                 },
                 'classes': e.get('edge_type', 'unknown'),
             })

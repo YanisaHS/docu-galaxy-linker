@@ -105,6 +105,19 @@
         },
       },
       {
+        selector: 'edge.duplicate',
+        style: {
+          'line-color': '#f0a030',
+          'target-arrow-color': '#f0a030',
+          'line-style': 'dashed',
+          'line-dash-pattern': [4, 3],
+          width: 3,
+          opacity: 0.85,
+          'target-arrow-shape': 'none',
+          'z-index': 5,
+        },
+      },
+      {
         selector: 'edge.dimmed',
         style: { opacity: 0.04 },
       },
@@ -198,14 +211,16 @@
 
   let showCrossRef = true;
   let showSharedConcept = false;  // off by default — too many edges for a clean layout
+  let showDuplicate = true;
 
   function applyEdgeFilter(cy) {
     cy.batch(() => {
       cy.edges().forEach(e => {
         const t = e.data('type');
         const hidden =
-          (t === 'cross_ref' && !showCrossRef) ||
-          (t === 'shared_concept' && !showSharedConcept);
+          (t === 'cross_ref'      && !showCrossRef) ||
+          (t === 'shared_concept' && !showSharedConcept) ||
+          (t === 'duplicate'      && !showDuplicate);
         e.style('display', hidden ? 'none' : 'element');
       });
     });
@@ -300,6 +315,10 @@
 
     hideLoading();
 
+    // Count duplicate edges (shingle-Jaccard detected)
+    const dupEdgesAll = cy.edges('[type = "duplicate"]');
+    document.getElementById('stat-dups').textContent = dupEdgesAll.length;
+
     // ---- Layout controls ----
     document.getElementById('btn-run-layout').addEventListener('click', () => runLayout(cy, true));
     document.getElementById('btn-fit').addEventListener('click', () =>
@@ -307,8 +326,9 @@
     );
 
     // ---- Edge type toggles ----
-    // Sync initial checkbox state with showSharedConcept default
+    // Sync initial checkbox states with defaults
     document.getElementById('toggle-shared-concept').checked = showSharedConcept;
+    document.getElementById('toggle-duplicate').checked = showDuplicate;
 
     document.getElementById('toggle-cross-ref').addEventListener('change', e => {
       showCrossRef = e.target.checked;
@@ -316,6 +336,10 @@
     });
     document.getElementById('toggle-shared-concept').addEventListener('change', e => {
       showSharedConcept = e.target.checked;
+      applyEdgeFilter(cy);
+    });
+    document.getElementById('toggle-duplicate').addEventListener('change', e => {
+      showDuplicate = e.target.checked;
       applyEdgeFilter(cy);
     });
 
@@ -417,6 +441,110 @@
       infoPanel.classList.add('visible');
     });
 
+    // ---- Edge click → info panel ----
+    cy.on('tap', 'edge', evt => {
+      const edge = evt.target;
+      const d = edge.data();
+      const src = cy.getElementById(d.source);
+      const tgt = cy.getElementById(d.target);
+      const srcLabel = src.data('label') || d.source;
+      const tgtLabel = tgt.data('label') || d.target;
+      const srcColor = SECTION_COLORS[src.data('type')] || DEFAULT_COLOR;
+      const tgtColor = SECTION_COLORS[tgt.data('type')] || DEFAULT_COLOR;
+
+      cy.elements().addClass('dimmed');
+      edge.removeClass('dimmed');
+      src.removeClass('dimmed');
+      tgt.removeClass('dimmed');
+
+      const nodeChip = (label, color) =>
+        `<span style="display:inline-block;padding:2px 10px;border-radius:6px;
+          background:${color}22;border:1px solid ${color};color:${color};font-size:11px">${esc(label)}</span>`;
+
+      if (d.type === 'cross_ref') {
+        infoTitle.textContent = 'Cross-reference';
+        infoBody.innerHTML =
+          `<div style="margin-bottom:8px">${nodeChip(srcLabel, srcColor)}</div>` +
+          `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">↓ explicitly links to ↓</div>` +
+          `<div style="margin-bottom:10px">${nodeChip(tgtLabel, tgtColor)}</div>` +
+          `<div style="margin-top:8px;font-size:11px;color:var(--muted)">` +
+          `This link was written by the documentation author.</div>`;
+      } else if (d.type === 'shared_concept') {
+        const sim = d.similarity || 0;
+        const simPct = Math.round(sim * 100);
+        const isDup = !!d.potential_duplicate;
+        const ov = d.overlap_coefficient != null ? Math.round(d.overlap_coefficient * 100) + '%' : null;
+        const hOverlap = d.heading_overlap || 0;
+        const dupBadge = isDup
+          ? `<div class="dup-badge">⚠ Potential duplicate</div>`
+          : '';
+        const terms = Array.isArray(d.shared_terms) && d.shared_terms.length
+          ? d.shared_terms
+          : (d.label ? d.label.split(', ') : []);
+        infoTitle.textContent = 'Topic overlap';
+        infoBody.innerHTML =
+          dupBadge +
+          `<div style="margin-bottom:8px">${nodeChip(srcLabel, srcColor)}</div>` +
+          `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">and</div>` +
+          `<div style="margin-bottom:10px">${nodeChip(tgtLabel, tgtColor)}</div>` +
+          `<div class="info-row"><span class="info-key">content overlap</span>` +
+          `<span class="info-val" style="font-weight:600;color:${isDup ? '#f0a030' : 'var(--text)'}">` +
+          `${ov ?? '—'}</span></div>` +
+          `<div class="info-row"><span class="info-key">shared headings</span>` +
+          `<span class="info-val">${hOverlap}</span></div>` +
+          `<div class="info-row"><span class="info-key">vocab similarity</span>` +
+          `<span class="info-val" style="color:var(--muted)">${simPct}%</span></div>`;
+        if (terms.length) {
+          infoBody.innerHTML +=
+            `<div style="margin-top:8px;font-size:11px;color:var(--muted);font-weight:600">Related terms:</div>` +
+            `<div style="margin-top:4px">${terms.map(t => `<span class="term-chip">${esc(t)}</span>`).join('')}</div>`;
+        }
+        const note = isDup
+          ? 'High content overlap — these pages may cover the same material. Consider merging or adding a clear distinction.'
+          : 'These pages cover related topics and may benefit from cross-references.';
+        infoBody.innerHTML += `<div style="margin-top:10px;font-size:11px;color:var(--muted)">${note}</div>`;
+      } else if (d.type === 'duplicate') {
+        const jaccard = d.jaccard != null ? Math.round(d.jaccard * 100) + '%' : (d.label || '—');
+        infoTitle.textContent = 'Potential duplicate';
+        infoBody.innerHTML =
+          `<div class="dup-badge">⚠ Potential duplicate</div>` +
+          `<div style="margin-bottom:8px">${nodeChip(srcLabel, srcColor)}</div>` +
+          `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">and</div>` +
+          `<div style="margin-bottom:10px">${nodeChip(tgtLabel, tgtColor)}</div>` +
+          `<div class="info-row"><span class="info-key">text overlap</span>` +
+          `<span class="info-val" style="font-weight:600;color:#f0a030">${jaccard}</span></div>` +
+          `<div style="margin-top:10px;font-size:11px;color:var(--muted)">` +
+          `High phrase-level overlap detected. These pages likely contain copy-pasted content and may need to be merged or differentiated.</div>`;
+      }
+
+      infoHeadings.innerHTML = '';
+      infoNeigh.innerHTML = '';
+      infoPanel.classList.add('visible');
+    });
+
+    // ---- Duplicate highlight controls ----
+    document.getElementById('btn-highlight-dups').addEventListener('click', () => {
+      document.getElementById('btn-highlight-dups').style.display = 'none';
+      document.getElementById('btn-clear-dups').style.display = '';
+      // Ensure duplicate edges are visible before highlighting
+      if (!showDuplicate) {
+        showDuplicate = true;
+        document.getElementById('toggle-duplicate').checked = true;
+        applyEdgeFilter(cy);
+      }
+      cy.elements().addClass('dimmed');
+      const dupEdges = cy.edges('[type = "duplicate"]');
+      dupEdges.removeClass('dimmed');
+      dupEdges.connectedNodes().removeClass('dimmed');
+    });
+    document.getElementById('btn-clear-dups').addEventListener('click', () => {
+      document.getElementById('btn-highlight-dups').style.display = '';
+      document.getElementById('btn-clear-dups').style.display = 'none';
+      cy.elements().removeClass('dimmed highlighted');
+      searchInput.value = '';
+      searchInfo.textContent = '';
+    });
+
     // ---- Edge tooltip on hover ----
     const tooltip = document.getElementById('edge-tooltip');
 
@@ -433,6 +561,11 @@
         tooltip.style.display = 'block';
       } else if (t === 'cross_ref') {
         tooltip.innerHTML = `<strong>Cross-reference</strong>`;
+        tooltip.style.display = 'block';
+      } else if (t === 'duplicate') {
+        const j = e.data('jaccard');
+        tooltip.innerHTML = `<strong style="color:#f0a030">⚠ Potential duplicate</strong>` +
+          (j != null ? `<br><span style="color:var(--muted)">text overlap: ${Math.round(j * 100)}%</span>` : '');
         tooltip.style.display = 'block';
       }
     });

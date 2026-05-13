@@ -100,6 +100,7 @@ class DocPage:
     headings: list[str] = field(default_factory=list)   # H2/H3 headings
     terms: dict[str, int] = field(default_factory=dict)  # term -> count in doc
     word_count: int = 0
+    shingles: frozenset = field(default_factory=frozenset)  # word trigrams for duplicate detection
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +113,21 @@ def _classify_section(rel_path: str) -> tuple[str, str]:
         if p == prefix or p.startswith(prefix + '/') or p.startswith(prefix + '.'):
             return label, key
     return _DIATAXIS_DEFAULT
+
+
+def _extract_shingles(raw_text: str, n: int = 3) -> frozenset:
+    """Extract word n-gram shingles from cleaned text for duplicate detection."""
+    text = _RE_YAML_FRONT.sub(' ', raw_text)
+    text = _RE_CODE_BLOCK.sub(' ', text)
+    text = _RE_INLINE_CODE.sub(' ', text)
+    text = _RE_LINK.sub(' ', text)
+    text = _RE_HTML_TAG.sub(' ', text)
+    text = _RE_PUNCTUATION.sub(' ', text)
+    text = text.lower()
+    words = [w for w in _RE_WORD_SPLIT.split(text) if len(w) >= 2]
+    if len(words) < n:
+        return frozenset()
+    return frozenset(tuple(words[i:i + n]) for i in range(len(words) - n + 1))
 
 
 def _extract_terms(raw_text: str) -> dict[str, int]:
@@ -200,6 +216,7 @@ def extract_doc_pages(docs_dir: str) -> list[DocPage]:
         title, headings = _extract_title_and_headings(text, fallback_title)
         title = _strip_diataxis_prefix(title)
         terms = _extract_terms(text)
+        shingles = _extract_shingles(text)
         word_count = len(text.split())
         section, section_key = _classify_section(rel)
 
@@ -212,6 +229,7 @@ def extract_doc_pages(docs_dir: str) -> list[DocPage]:
             headings=headings,
             terms=terms,
             word_count=word_count,
+            shingles=shingles,
         ))
 
     return pages

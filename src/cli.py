@@ -231,9 +231,11 @@ def concept_map(
     n_nodes = len(graph['nodes'])
     n_xref = sum(1 for e in graph['edges'] if e['edge_type'] == 'cross_ref')
     n_sim = sum(1 for e in graph['edges'] if e['edge_type'] == 'shared_concept')
+    n_dup = sum(1 for e in graph['edges'] if e['edge_type'] == 'duplicate')
     click.echo(f'  {n_nodes} topic nodes')
     click.echo(f'  {n_xref} cross-reference edges')
     click.echo(f'  {n_sim} conceptual-similarity edges')
+    click.echo(f'  {n_dup} duplicate edges')
 
     if output:
         import json as _json

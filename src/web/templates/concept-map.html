@@ -170,6 +170,27 @@
     }
     #info-neighbours li:hover { color: var(--accent); }
 
+    .dup-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      background: #f0a03022;
+      border: 1px solid #f0a030;
+      color: #f0a030;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    .term-chip {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin: 2px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
     /* ---- Canvas ---- */
     #canvas-area {
       flex: 1; display: flex; flex-direction: column;
@@ -277,6 +298,24 @@
       <input type="checkbox" id="toggle-shared-concept" checked />
       <div class="legend-line" style="background:var(--e-shared-concept); border-top: 2px dashed var(--e-shared-concept); height:0; margin-top:1px"></div>
       <label for="toggle-shared-concept">Topic overlaps</label>
+    </div>
+    <div class="edge-toggle-row">
+      <input type="checkbox" id="toggle-duplicate" checked />
+      <div class="legend-line" style="background:#f0a030; border-top: 2px dashed #f0a030; height:0; margin-top:1px"></div>
+      <label for="toggle-duplicate">Duplicates</label>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <h2>Potential duplicates</h2>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Pages with high phrase-level text overlap (word trigram Jaccard &ge;0.30).</p>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span id="stat-dups" style="font-size:22px;font-weight:700;color:#f0a030">—</span>
+      <span style="font-size:11px;color:var(--muted)">pairs found</span>
+    </div>
+    <div class="btn-row">
+      <button id="btn-highlight-dups">Highlight</button>
+      <button id="btn-clear-dups" style="display:none">Clear</button>
     </div>
   </div>
 

@@ -71,6 +71,61 @@ def _top_shared_terms(
 
 
 # ---------------------------------------------------------------------------
+# Content-overlap duplicate detection
+# ---------------------------------------------------------------------------
+
+def _heading_overlap(a: DocPage, b: DocPage) -> int:
+    """
+    Count exact heading matches between two pages (case-insensitive).
+    Headings are strong structural signals: identical section titles mean
+    the pages cover the same material.
+    """
+    set_a = {h.lower().strip() for h in a.headings}
+    set_b = {h.lower().strip() for h in b.headings}
+    return len(set_a & set_b)
+
+
+def _overlap_coefficient(a: DocPage, b: DocPage) -> float:
+    """
+    Overlap coefficient on word shingles: |A ∩ B| / min(|A|, |B|).
+    Measures what fraction of the *smaller* page's content exists in the
+    larger one — a short page that is a subset of a longer one scores 1.0.
+    Uses word trigrams (shingles) for noise-robustness.
+    """
+    if not a.shingles or not b.shingles:
+        return 0.0
+    shared = len(a.shingles & b.shingles)
+    return shared / min(len(a.shingles), len(b.shingles))
+
+
+def _is_potential_duplicate(
+    a: DocPage,
+    b: DocPage,
+    heading_threshold: int = 2,
+    overlap_threshold: float = 0.35,
+) -> bool:
+    """
+    Return True if two pages look like duplicate/redundant content.
+    Criteria (either is sufficient):
+      - ≥2 shared headings AND overlap coefficient ≥ 0.20
+      - overlap coefficient ≥ 0.35  (one page is largely a subset of the other)
+    """
+    h = _heading_overlap(a, b)
+    ov = _overlap_coefficient(a, b)
+    return (h >= heading_threshold and ov >= 0.20) or ov >= overlap_threshold
+
+
+def _jaccard_sim(sa: frozenset, sb: frozenset) -> float:
+    """Jaccard similarity between two shingle sets."""
+    if not sa or not sb:
+        return 0.0
+    intersection = len(sa & sb)
+    if intersection == 0:
+        return 0.0
+    return intersection / len(sa | sb)
+
+
+# ---------------------------------------------------------------------------
 # Cross-reference helpers
 # ---------------------------------------------------------------------------
 
@@ -141,6 +196,7 @@ def build_concept_graph(
     docs_root: str,
     similarity_threshold: float = 0.12,
     max_sim_edges_per_node: int = 8,
+    duplicate_threshold: float = 0.30,
 ) -> dict[str, Any]:
     """
     Build a concept graph from a list of DocPage objects.
@@ -155,6 +211,8 @@ def build_concept_graph(
                                 shared-concept edge (0–1).
         max_sim_edges_per_node: Cap on similarity edges per node to keep
                                 the graph readable.
+        duplicate_threshold:    Minimum word-trigram Jaccard similarity to
+                                emit a duplicate edge (0–1).
     """
     node_ids: set[str] = {p.id for p in pages}
     tfidf = _compute_tfidf(pages)
@@ -263,6 +321,9 @@ def build_concept_graph(
 
     sim_candidates.sort(reverse=True)
 
+    # Build a page lookup for duplicate detection
+    page_by_id: dict[str, DocPage] = {p.id: p for p in pages}
+
     node_sim_count: dict[str, int] = {}
     sim_edges: list[dict[str, Any]] = []
     for sim, pid_a, pid_b, top_terms in sim_candidates:
@@ -271,6 +332,11 @@ def build_concept_graph(
         if ca < max_sim_edges_per_node and cb < max_sim_edges_per_node:
             node_sim_count[pid_a] = ca + 1
             node_sim_count[pid_b] = cb + 1
+            pa = page_by_id[pid_a]
+            pb = page_by_id[pid_b]
+            h_overlap = _heading_overlap(pa, pb)
+            ov_coeff  = _overlap_coefficient(pa, pb)
+            dup = _is_potential_duplicate(pa, pb)
             sim_edges.append({
                 'source': pid_a,
                 'target': pid_b,
@@ -279,10 +345,50 @@ def build_concept_graph(
                 'metadata': {
                     'similarity': round(sim, 3),
                     'shared_terms': top_terms,
+                    'heading_overlap': h_overlap,
+                    'overlap_coefficient': round(ov_coeff, 3),
+                    'potential_duplicate': dup,
+                },
+            })
+
+    # ------------------------------------------------------------------
+    # Duplicate detection  (word trigram Jaccard similarity)
+    # ------------------------------------------------------------------
+    # Build inverted index: shingle -> [page_ids], skipping shingles that
+    # are so common they cause O(n²) explosion without adding signal.
+    shingle_index: dict[tuple, list[str]] = {}
+    for page in pages:
+        for shingle in page.shingles:
+            shingle_index.setdefault(shingle, []).append(page.id)
+
+    dup_candidates: dict[tuple[str, str], int] = {}
+    for pids in shingle_index.values():
+        if len(pids) < 2 or len(pids) > max(2, len(pages) // 5):
+            # Skip shingles unique to one page or shared by >20% of pages
+            continue
+        for i in range(len(pids)):
+            for j in range(i + 1, len(pids)):
+                pair = (pids[i], pids[j]) if pids[i] < pids[j] else (pids[j], pids[i])
+                dup_candidates[pair] = dup_candidates.get(pair, 0) + 1
+
+    shingle_map = {p.id: p.shingles for p in pages}
+    dup_edges: list[dict[str, Any]] = []
+    for (pid_a, pid_b), shared_count in dup_candidates.items():
+        if shared_count < 5:  # cheap pre-filter before computing full Jaccard
+            continue
+        sim = _jaccard_sim(shingle_map[pid_a], shingle_map[pid_b])
+        if sim >= duplicate_threshold:
+            dup_edges.append({
+                'source': pid_a,
+                'target': pid_b,
+                'edge_type': 'duplicate',
+                'label': f'duplicate (j={sim:.2f})',
+                'metadata': {
+                    'jaccard': round(sim, 3),
                 },
             })
 
     return {
         'nodes': nodes,
-        'edges': cross_ref_edges + sim_edges,
+        'edges': cross_ref_edges + sim_edges + dup_edges,
     }
