@@ -1,5 +1,8 @@
 # Docu Galaxy Linker
 
+<img width="1512" height="957" alt="image" src="https://github.com/user-attachments/assets/5a1f6356-5790-4da1-949c-01353bd775e4" />
+
+
 A tool for extracting, analysing, and visualising the link structure and conceptual topology of Canonical documentation projects.
 
 Two complementary views are available:
