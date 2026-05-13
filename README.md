@@ -5,7 +5,7 @@ A tool for extracting, analysing, and visualising the link structure and concept
 Two complementary views are available:
 
 - **Link graph** — every internal link, external URL, MyST label, anchor, and image reference extracted from `.md` and `.rst` files, rendered as an interactive Cytoscape.js graph.
-- **Concept map** — a topic-level view where nodes are documentation pages coloured by [Diátaxis](https://diataxis.fr/) category, and edges represent either explicit cross-references or TF-IDF conceptual similarity. The concept map also surfaces **split candidates** (pages whose sections cover divergent topics) and **duplicate content** (pages with high phrase-level text overlap).
+- **Concept map** — a topic-level view where nodes are documentation pages coloured by [Diátaxis](https://diataxis.fr/) category, and edges represent either explicit cross-references. The concept map also surfaces **split candidates** (pages whose sections cover divergent topics) and **duplicate content** (pages with high phrase-level text overlap).
 
 ---
 
